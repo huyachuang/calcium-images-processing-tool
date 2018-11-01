@@ -1,5 +1,4 @@
 function registered_ROIs = register_roi(ROIs, moving_image, fixed_image, CaSignal)
-
 	[optimizer, metric] = imregconfig('multimodal');
 	ref2d = imref2d(size(moving_image));
 	tform_r = imregtform(moving_image, fixed_image, 'rigid', optimizer, metric, 'PyramidLevels', 3);

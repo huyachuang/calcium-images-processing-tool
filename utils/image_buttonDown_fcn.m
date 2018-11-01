@@ -1,6 +1,7 @@
 function CaSignal = Image_buttonDown_fcn(hObject,eventdata, handles, CaSignal)
 	x = uint16(eventdata.IntersectionPoint(1));
 	y = uint16(eventdata.IntersectionPoint(2));
+	disp([x, y])
 	if get(handles.DrawROICheckbox,'Value') == 1
 		x_start = x - CaSignal.ROIDiameter;
 		if x_start < 1

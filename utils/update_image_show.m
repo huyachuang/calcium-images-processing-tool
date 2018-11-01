@@ -23,6 +23,7 @@ function CaSignal = updata_image_show(handles, CaSignal)
 			plot(boundary(:,2) + double(ROI{3}), boundary(:,1) + double(ROI{1}), 'r', 'LineWidth', linewidth)
 		end
 	end
+	CaSignal.h_image = imshow(img);
 	hold off;
 	
 end
