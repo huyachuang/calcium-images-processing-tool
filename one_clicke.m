@@ -22,7 +22,7 @@ function varargout = one_clicke(varargin)
 
 % Edit the above text to modify the response to help one_clicke
 
-% Last Modified by GUIDE v2.5 30-Oct-2018 15:13:55
+% Last Modified by GUIDE v2.5 02-Nov-2018 10:18:13
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -515,13 +515,13 @@ CaSignal.h_image.ButtonDownFcn = {@Image_ButtonDownFcn, handles};
 % --- Executes on key press with focus on figure1 or any of its controls.
 function figure1_WindowKeyPressFcn(hObject, eventdata, handles)
 global CaSignal
-if eventdata.Key == 'space'
+if strcmp(eventdata.Key, 'space')
 	SaveButton_Callback(hObject, eventdata, handles)
-elseif eventdata.Key == 'd' && CaSignal.TempROI{7} <= CaSignal.ROI_num
+elseif strcmp(eventdata.Key, 'd') && CaSignal.TempROI{7} <= CaSignal.ROI_num
 	DeleteButton_Callback(hObject, eventdata, handles);
-elseif eventdata.Key == 'r'
+elseif strcmp(eventdata.Key, 'r')
 	ReDrawButton_Callback(hObject, eventdata, handles);
-elseif eventdata.Key == 'n'
+elseif strcmp(eventdata.Key, 'n')
 	FindNextButton_Callback(hObject, eventdata, handles);
 else
 	return
@@ -558,3 +558,24 @@ end
 
 % --- Executes during object deletion, before destroying properties.
 function figure1_DeleteFcn(hObject, eventdata, handles)
+
+
+% --- Executes on button press in DeleteAllButton.
+function DeleteAllButton_Callback(hObject, eventdata, handles)
+global CaSignal
+answer = questdlg('Do you want to delete all ROI information ?', 'Alert query');
+switch answer
+    case 'Yes'
+		CaSignal.ROIs = {};
+		CaSignal.ROI_num = 0;
+		CaSignal.ROI_T_num = 0;
+		CaSignal.TempROI = {};
+		CaSignal.SummarizedMask = zeros(size(CaSignal.imageData, 1), size(CaSignal.imageData, 2));
+		CaSignal = update_image_show(handles, CaSignal);
+		CaSignal.h_image.ButtonDownFcn = {@Image_ButtonDownFcn, handles};
+		CaSignal = update_subimage_show(handles, CaSignal);
+    case 'No'
+		return
+    case 'Cancel'
+		return
+end
