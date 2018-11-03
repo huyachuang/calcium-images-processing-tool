@@ -1,8 +1,8 @@
 function CaSignal = Image_buttonDown_fcn(hObject,eventdata, handles, CaSignal)
 	x = uint16(eventdata.IntersectionPoint(1));
 	y = uint16(eventdata.IntersectionPoint(2));
-	disp([x, y])
-	if get(handles.DrawROICheckbox,'Value') == 1
+	CaSignal.TempXY = [x, y];
+	if get(handles.DrawROICheckbox,'Value') == 1 && CaSignal.SummarizedMask(y, x) == 0
 		x_start = x - CaSignal.ROIDiameter;
 		if x_start < 1
 			x_start = 1;
@@ -29,9 +29,10 @@ function CaSignal = Image_buttonDown_fcn(hObject,eventdata, handles, CaSignal)
 		boundary = B{1};
 		CaSignal.TempROI = {y_start, y_end, x_start, x_end, C_int, boundary, CaSignal.ROI_num + 1, 'T'};
 		CaSignal = update_subimage_show(handles, CaSignal);
+	elseif CaSignal.SummarizedMask(y, x) > 0
+		CaSignal.TempROI = CaSignal.ROIs{CaSignal.SummarizedMask(y, x)};
+		CaSignal = update_subimage_show(handles, CaSignal);
 	else
-		if CaSignal.SummarizedMask(y, x) > 0
-			CaSignal.TempROI = CaSignal.ROIs{CaSignal.SummarizedMask(y, x)};
-			CaSignal = update_subimage_show(handles, CaSignal);
-		end
+		CaSignal = update_subimage_show(handles, CaSignal);
+	end
 end

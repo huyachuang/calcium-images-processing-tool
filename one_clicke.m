@@ -66,6 +66,7 @@ CaSignal.TempROI = {};
 CaSignal.ROIDiameter = 12;
 CaSignal.SummarizedMask = [];
 CaSignal.imagePathName = pwd;
+CaSignal.TempXY = [];
 set(handles.ModelPathEdit, 'String', pwd);
 set(handles.GlobalModelPathEdit, 'String', pwd);
 addpath('./utils');
@@ -165,28 +166,29 @@ function SaveButton_KeyPressFcn(hObject, eventdata, handles)
 % --- Executes on button press in ReDrawButton.
 function ReDrawButton_Callback(hObject, eventdata, handles)
 global CaSignal
-CaSignal.TempROI{8} = 'F';
-CaSignal = update_subimage_show(handles, CaSignal);
-roi_idx = CaSignal.TempROI{7};
-y_start = CaSignal.TempROI{1};
-y_end = CaSignal.TempROI{2};
-x_start = CaSignal.TempROI{3};
-x_end = CaSignal.TempROI{4};
-h_draw = imfreehand;
-if numel(h_draw) == 0
-	return;
-end
-% pos = h_draw.getPosition;
-BW = createMask(h_draw);
-B = bwboundaries(BW, 'noholes');
-boundary = B{1};
-CaSignal.TempROI = {y_start, y_end, x_start, x_end, BW, boundary, CaSignal.TempROI{7}, 'T'};
-
-if CaSignal.TempROI{7} <= CaSignal.ROI_num
-	CaSignal.ROIs{CaSignal.TempROI{7}} = CaSignal.TempROI;
-end
-
-CaSignal = update_subimage_show(handles, CaSignal);
+CaSignal = redraw_fcn(handles, CaSignal);
+% CaSignal.TempROI{8} = 'F';
+% CaSignal = update_subimage_show(handles, CaSignal);
+% roi_idx = CaSignal.TempROI{7};
+% y_start = CaSignal.TempROI{1};
+% y_end = CaSignal.TempROI{2};
+% x_start = CaSignal.TempROI{3};
+% x_end = CaSignal.TempROI{4};
+% h_draw = imfreehand;
+% if numel(h_draw) == 0
+% 	return;
+% end
+% % pos = h_draw.getPosition;
+% BW = createMask(h_draw);
+% B = bwboundaries(BW, 'noholes');
+% boundary = B{1};
+% CaSignal.TempROI = {y_start, y_end, x_start, x_end, BW, boundary, CaSignal.TempROI{7}, 'T'};
+% 
+% if CaSignal.TempROI{7} <= CaSignal.ROI_num
+% 	CaSignal.ROIs{CaSignal.TempROI{7}} = CaSignal.TempROI;
+% end
+% 
+% CaSignal = update_subimage_show(handles, CaSignal);
 
 
 
