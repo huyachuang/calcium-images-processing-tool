@@ -22,14 +22,14 @@ function CaSignal = Image_buttonDown_fcn(hObject,eventdata, handles, CaSignal)
 		end
 		I = uint8(zeros(2 * CaSignal.ROIDiameter + 1,  2 * CaSignal.ROIDiameter + 1, size(CaSignal.imageData, 3)));
 		I(1:y_end - y_start + 1, 1:x_end - x_start + 1,:) = CaSignal.imageData(y_start:y_end, x_start:x_end,:);
-		C = semanticseg(I, CaSignal.model.net);
+		C = semanticseg(I, CaSignal.localFCNModel.net);
 		C_int = uint8(C) - 1;
 		BW = imbinarize(C_int);
 		B = bwboundaries(BW, 'noholes');
 		boundary = B{1};
 		CaSignal.TempROI = {y_start, y_end, x_start, x_end, C_int, boundary, CaSignal.ROI_num + 1, 'T'};
 		CaSignal = update_subimage_show(handles, CaSignal);
-	elseif CaSignal.SummarizedMask(y, x) > 0
+	elseif ~isequal(CaSignal.SummarizedMask, []) && CaSignal.SummarizedMask(y, x) > 0
 		CaSignal.TempROI = CaSignal.ROIs{CaSignal.SummarizedMask(y, x)};
 		CaSignal = update_subimage_show(handles, CaSignal);
 	else
