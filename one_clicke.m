@@ -411,18 +411,28 @@ set(handles.GlobalFCNRetrainButton,'Enable', 'on');
 function SaveROIInfoTool_ClickedCallback(hObject, eventdata, handles)
 global CaSignal
 ROIInfo = {};
+ROImask = {};
 n = 0;
 for i = 1:CaSignal.ROI_num 
 	if CaSignal.ROIs{i}{8} == 'T'
 		n = n+1;
 		ROIInfo{n} =  CaSignal.ROIs{i};
 		ROIInfo{n}{7} = n;
+		tempMask = zeros(size(CaSignal.imageData, 1), size(CaSignal.imageData, 2));
+		y_start = ROIInfo{n}{1};
+		y_end = ROIInfo{n}{2};
+		x_start = ROIInfo{n}{3};
+		x_end = ROIInfo{n}{4};
+		tempRoi = ROIInfo{n}{5};
+		tempMask(y_start:y_end, x_start:x_end) = tempRoi(1:y_end - y_start + 1, 1:x_end - x_start + 1);
+		ROImask{n} = tempMask;
 	end
 end
 if exist(fullfile(CaSignal.imagePathName, 'ROIInfo'), 'dir') == 0
 	mkdir(fullfile(CaSignal.imagePathName, 'ROIInfo'));
 end
-save(fullfile(CaSignal.imagePathName, 'ROIInfo', 'ROIInfo.mat'), 'ROIInfo');
+disp('***Save ROI info***');
+save(fullfile(CaSignal.imagePathName, 'ROIInfo', 'ROIInfo.mat'), 'ROIInfo', 'ROImask');
 
 
 % --------------------------------------------------------------------
