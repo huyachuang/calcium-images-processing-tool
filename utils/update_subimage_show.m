@@ -1,7 +1,8 @@
 function CaSignal = update_subimage_show(handles, CaSignal)
 	x = CaSignal.TempXY(1);
 	y = CaSignal.TempXY(2);
-	if numel(CaSignal.TempROI) ~= 0 && x >= CaSignal.TempROI{3} && x <= CaSignal.TempROI{4} && y >= CaSignal.TempROI{1} && y <= CaSignal.TempROI{2}
+	if numel(CaSignal.TempROI) ~= 0 && ((get(handles.NextROICheckBox,'Value') == 1) || ...
+			(x >= CaSignal.TempROI{3} && x <= CaSignal.TempROI{4} && y >= CaSignal.TempROI{1} && y <= CaSignal.TempROI{2}))
 		axes(handles.SubimageShowAxes);
 		y_start = CaSignal.TempROI{1};
 		y_end = CaSignal.TempROI{2};

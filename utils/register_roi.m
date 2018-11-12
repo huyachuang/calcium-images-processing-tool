@@ -47,7 +47,7 @@ function registered_ROIs = register_roi(ROIs, moving_image, fixed_image, CaSigna
 		end
 		I = uint8(zeros(2 * ROIDiameter + 1,  2 * ROIDiameter + 1, size(CaSignal.imageData, 3)));
 		I(1:y_end - y_start + 1, 1:x_end - x_start + 1,:) = CaSignal.imageData(y_start:y_end, x_start:x_end,:);
-		mask = semanticseg(I, CaSignal.model.net);
+		mask = semanticseg(I, CaSignal.localFCNModel.net);
 		mask = uint8(mask) - 1;
 		BW = imbinarize(mask);
 		B = bwboundaries(BW, 'noholes');

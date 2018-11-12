@@ -22,7 +22,7 @@ function varargout = one_clicke(varargin)
 
 % Edit the above text to modify the response to help one_clicke
 
-% Last Modified by GUIDE v2.5 02-Nov-2018 10:18:13
+% Last Modified by GUIDE v2.5 07-Nov-2018 13:40:07
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -66,9 +66,10 @@ CaSignal.TempROI = {};
 CaSignal.ROIDiameter = 12;
 CaSignal.SummarizedMask = [];
 CaSignal.imagePathName = pwd;
-CaSignal.TempXY = [];
+CaSignal.TempXY = [1, 1];
 set(handles.ModelPathEdit, 'String', pwd);
 set(handles.GlobalModelPathEdit, 'String', pwd);
+cd(fileparts(which(mfilename)));
 addpath('./utils');
 % Update handles structure
 guidata(hObject, handles);
@@ -108,11 +109,13 @@ if isequal(filename,0)
 	return;
 end
 set(handles.ModelPathEdit,'String', fullfile(pathName, filename));
-CaSignal.modelFilename = filename;
-CaSignal.modelPathName = pathName;
-CaSignal.model = load(fullfile(CaSignal.modelPathName, CaSignal.modelFilename));
-set(handles.DrawROICheckbox, 'Enable', 'on')
+CaSignal.localFCNModelFilename = filename;
+CaSignal.localFCNModelPathName = pathName;
+CaSignal.localFCNModel = load(fullfile(CaSignal.modelPathName, CaSignal.modelFilename));
+set(handles.DrawROICheckbox, 'Enable', 'on');
 set(handles.RegisterROIButton, 'Enable', 'on');
+set(handles.LocalFCNRetrainButton, 'Enable', 'on');
+set(handles.ChooseGlobalModelButton, 'Enable', 'on');
 
 
 function ModelPathEdit_Callback(hObject, eventdata, handles)
@@ -211,6 +214,8 @@ end
 % --- Executes on button press in FindNextButton.
 function FindNextButton_Callback(hObject, eventdata, handles)
 global CaSignal
+CaSignal = update_image_show(handles, CaSignal);
+CaSignal.h_image.ButtonDownFcn = {@Image_ButtonDownFcn, handles};
 CaSignal = find_next_fcn(handles, CaSignal);
 
 
@@ -392,12 +397,14 @@ dataPath = get(handles.GlobalModelPathEdit,'String');
 if isequal(filename,0)
 	return;
 end
-set(handles.DataPathEdit,'String', fullfile(pathName, filename));
-CaSignal.global_segModel = load(fullfile(pathName, filename));
+set(handles.GlobalModelPathEdit,'String', fullfile(pathName, filename));
+CaSignal.global_FCNModel = load(fullfile(pathName, filename));
+CaSignal.globalFCNModelFilename = filename;
+CaSignal.globalFCNModelPathName = pathName;
 CaSignal = global_segmentation(CaSignal);
-CaSignal = update_image_show(handles, CaSignal);
-CaSignal.h_image.ButtonDownFcn = {@Image_ButtonDownFcn, handles};
+set(handles.NextROICheckBox,'Enable', 'on');
 set(handles.FindNextButton,'Enable', 'on');
+set(handles.GlobalFCNRetrainButton,'Enable', 'on');
 
 
 % --------------------------------------------------------------------
@@ -443,7 +450,6 @@ CaSignal.cell_score = ones(size(CaSignal.max_mean_image));
 CaSignal.cell_score_mask = ones(size(CaSignal.max_mean_image));
 set(handles.LoadROIButton, 'Enable', 'on');
 set(handles.ModelChooseButton, 'Enable', 'on');
-set(handles.ChooseGlobalModelButton, 'Enable', 'on');
 set(handles.ModelPathEdit, 'String', CaSignal.imagePathName);
 set(handles.GlobalModelPathEdit, 'String', CaSignal.imagePathName);
 
@@ -531,18 +537,18 @@ end
 
 % --- Executes on key press with focus on figure1 and none of its controls.
 function figure1_KeyPressFcn(hObject, eventdata, handles)
-global CaSignal
-if strcmp(eventdata.Key, 'space')
-	SaveButton_Callback(hObject, eventdata, handles)
-elseif strcmp(eventdata.Key, 'd') && CaSignal.TempROI{7} <= CaSignal.ROI_num
-	DeleteButton_Callback(hObject, eventdata, handles);
-elseif strcmp(eventdata.Key, 'r')
-	ReDrawButton_Callback(hObject, eventdata, handles);
-elseif strcmp(eventdata.Key, 'n')
-	FindNextButton_Callback(hObject, eventdata, handles);
-else
-	return
-end
+% global CaSignal
+% if strcmp(eventdata.Key, 'space')
+% 	SaveButton_Callback(hObject, eventdata, handles)
+% elseif strcmp(eventdata.Key, 'd') && CaSignal.TempROI{7} <= CaSignal.ROI_num
+% 	DeleteButton_Callback(hObject, eventdata, handles);
+% elseif strcmp(eventdata.Key, 'r')
+% 	ReDrawButton_Callback(hObject, eventdata, handles);
+% elseif strcmp(eventdata.Key, 'n')
+% 	FindNextButton_Callback(hObject, eventdata, handles);
+% else
+% 	return
+% end
 
 
 % --- Executes when user attempts to close figure1.
@@ -581,3 +587,26 @@ switch answer
     case 'Cancel'
 		return
 end
+
+
+% --- Executes on button press in LocalFCNRetrainButton.
+function LocalFCNRetrainButton_Callback(hObject, eventdata, handles)
+global CaSignal
+datapath = uigetfile_n_dir(CaSignal.imagePathName, 'Chose folders used to train');
+if numel(datapath) ~= 0
+	CaSignal = retrain_localFCN(CaSignal, datapath);
+end
+
+
+% --- Executes on button press in GlobalFCNRetrainButton.
+function GlobalFCNRetrainButton_Callback(hObject, eventdata, handles)
+global CaSignal
+datapath = uigetfile_n_dir(CaSignal.imagePathName, 'Chose folders used to train');
+if numel(datapath) ~= 0
+	CaSignal = retrain_globalFCN(CaSignal, datapath);
+end
+
+
+% --- Executes on button press in NextROICheckBox.
+function NextROICheckBox_Callback(hObject, eventdata, handles)
+

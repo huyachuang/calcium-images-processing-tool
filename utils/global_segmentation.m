@@ -1,6 +1,6 @@
 function CaSignal = global_segmentation(CaSignal)
-	logit = predict(CaSignal.global_segModel.net, CaSignal.imageData);
-	C = semanticseg(CaSignal.imageData, CaSignal.global_segModel.net);
+	logit = predict(CaSignal.global_FCNModel.net, CaSignal.imageData);
+	C = semanticseg(CaSignal.imageData, CaSignal.global_FCNModel.net);
 	C_int = uint8(C) - 1;
 	se = strel('square',3);
 	mask = imerode(C_int, se);
