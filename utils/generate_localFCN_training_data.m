@@ -27,8 +27,8 @@ function training_data_path = generate_localFCN_training_data(src_dir, dst_dir, 
 		end
 		if isfield(ROIinfo, 'ROIinfoBU')
 			ROImasks = ROIinfo.ROIinfoBU.ROImask;
-		elseif isfield(ROIinfo, 'ROIinfo')
-			ROIs = data.ROIinfo;
+		elseif isfield(ROIinfo, 'ROIInfo')
+			ROIs = data.ROIInfo;
 			ROImasks = cell([1, size(ROIs, 2)]);
 			for j = 1:size(ROIs, 2)
 				tempMask = zeros(size(img, 1), size(img, 2));
