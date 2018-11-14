@@ -111,7 +111,9 @@ end
 set(handles.ModelPathEdit,'String', fullfile(pathName, filename));
 CaSignal.localFCNModelFilename = filename;
 CaSignal.localFCNModelPathName = pathName;
-CaSignal.localFCNModel = load(fullfile(CaSignal.modelPathName, CaSignal.modelFilename));
+disp('*** Loading Local FCN Model ***')
+CaSignal.localFCNModel = load(fullfile(CaSignal.localFCNModelPathName, CaSignal.localFCNModelFilename));
+disp('*** Done ***')
 set(handles.DrawROICheckbox, 'Enable', 'on');
 set(handles.RegisterROIButton, 'Enable', 'on');
 set(handles.LocalFCNRetrainButton, 'Enable', 'on');
@@ -398,10 +400,14 @@ if isequal(filename,0)
 	return;
 end
 set(handles.GlobalModelPathEdit,'String', fullfile(pathName, filename));
+disp('*** Loading Global FCN Model ***');
 CaSignal.global_FCNModel = load(fullfile(pathName, filename));
+disp('*** Done ***')
 CaSignal.globalFCNModelFilename = filename;
 CaSignal.globalFCNModelPathName = pathName;
+disp('*** Running Global Segmentation ***');
 CaSignal = global_segmentation(CaSignal);
+disp('*** Done ***')
 set(handles.NextROICheckBox,'Enable', 'on');
 set(handles.FindNextButton,'Enable', 'on');
 set(handles.GlobalFCNRetrainButton,'Enable', 'on');
@@ -444,7 +450,9 @@ if isequal(filename,0)
 end
 CaSignal.imageFilename = filename;
 CaSignal.imagePathName = pathName;
+disp('***Loading Image Data***')
 [CaSignal.mean_images, CaSignal.max_images] = load_image_data(CaSignal.imagePathName);
+disp('***Done***')
 CaSignal.max_mean_image = max(CaSignal.mean_images, [], 3);
 CaSignal.imageData = gray2RGB(CaSignal.max_mean_image);
 CaSignal.current_trial = 1;
@@ -480,7 +488,9 @@ ROIs = load_roi(fullfile(pathname, filename), CaSignal.ROIDiameter);
 CaSignal.ROIs = ROIs;
 CaSignal.ROI_num = size(CaSignal.ROIs, 2);
 CaSignal.ROI_T_num = CaSignal.ROI_num;
-CaSignal.TempROI = CaSignal.ROIs{1};
+if CaSignal.ROI_num > 0
+	CaSignal.TempROI = CaSignal.ROIs{1};
+end
 set(handles.ROINumShowText, 'String', num2str(CaSignal.ROI_T_num));
 for i = 1:CaSignal.ROI_num
 	tempMask = zeros(size(CaSignal.imageData, 1), size(CaSignal.imageData, 2));

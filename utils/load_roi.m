@@ -1,7 +1,7 @@
 function ROIs = load_roi(filename, roi_diameter)
 	data = load(filename);
-	if isfield(data, 'ROIinfo')
-		ROIs = data.ROIinfo;
+	if isfield(data, 'ROIInfo')
+		ROIs = data.ROIInfo;
 	elseif isfield(data, 'ROIinfoBU')
 		ROIs = {};
 		ROImask = data.ROIinfoBU.ROImask;
