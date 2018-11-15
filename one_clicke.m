@@ -47,9 +47,11 @@ end
 function Image_ButtonDownFcn(hObject,eventdata, handles)
 global CaSignal
 CaSignal = image_buttonDown_fcn(hObject,eventdata, handles, CaSignal);
+CaSignal = Update_Image_Fcn(handles, CaSignal);
+
+function CaSignal = Update_Image_Fcn(handles, CaSignal)
 CaSignal = update_image_show(handles, CaSignal);
 CaSignal.h_image.ButtonDownFcn = {@Image_ButtonDownFcn, handles};
-
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -66,7 +68,7 @@ CaSignal.TempROI = {};
 CaSignal.ROIDiameter = 12;
 CaSignal.SummarizedMask = [];
 CaSignal.imagePathName = pwd;
-CaSignal.TempXY = [1, 1];
+CaSignal.TempXY = [64, 64];
 set(handles.ModelPathEdit, 'String', pwd);
 set(handles.GlobalModelPathEdit, 'String', pwd);
 cd(fileparts(which(mfilename)));
@@ -140,28 +142,7 @@ function ImageShowAxes_CreateFcn(hObject, eventdata, handles)
 % --- Executes on button press in SaveButton.
 function SaveButton_Callback(hObject, eventdata, handles)
 global CaSignal
-if ~isempty(CaSignal.TempROI) && CaSignal.TempROI{7} > CaSignal.ROI_num
-	CaSignal.ROI_num = CaSignal.ROI_num + 1;
-	CaSignal.ROI_T_num = CaSignal.ROI_T_num + 1;
-	CaSignal.ROIs{CaSignal.ROI_num} = CaSignal.TempROI;
-	tempMask = zeros(size(CaSignal.imageData, 1), size(CaSignal.imageData, 2));
-	y_start = CaSignal.TempROI{1};
-	y_end = CaSignal.TempROI{2};
-	x_start = CaSignal.TempROI{3};
-	x_end = CaSignal.TempROI{4};
-	tempRoi = CaSignal.TempROI{5};
-	tempMask(y_start:y_end, x_start:x_end) = tempRoi(1:y_end - y_start + 1, 1:x_end - x_start + 1);
-	idx = find(tempMask);
-	CaSignal.SummarizedMask(idx) = CaSignal.TempROI{7};
-	set(handles.ROINumShowText, 'String', num2str(CaSignal.ROI_T_num));
-	se = strel('square',3);
-	tempMask = imdilate(tempMask, se);
-	tempMask = imdilate(tempMask, se);
-	CaSignal.cell_score_mask = and(CaSignal.cell_score_mask, 1 - tempMask);
-	CaSignal = update_image_show(handles, CaSignal);
-	CaSignal.h_image.ButtonDownFcn = {@Image_ButtonDownFcn, handles};
-	sprintf('save ROI %d', CaSignal.ROI_T_num)
-end
+CaSignal = save_roi_fcn(CaSignal, handles);
 
 
 % --- Executes on key press with focus on SaveButton and none of its controls.
@@ -172,28 +153,6 @@ function SaveButton_KeyPressFcn(hObject, eventdata, handles)
 function ReDrawButton_Callback(hObject, eventdata, handles)
 global CaSignal
 CaSignal = redraw_fcn(handles, CaSignal);
-% CaSignal.TempROI{8} = 'F';
-% CaSignal = update_subimage_show(handles, CaSignal);
-% roi_idx = CaSignal.TempROI{7};
-% y_start = CaSignal.TempROI{1};
-% y_end = CaSignal.TempROI{2};
-% x_start = CaSignal.TempROI{3};
-% x_end = CaSignal.TempROI{4};
-% h_draw = imfreehand;
-% if numel(h_draw) == 0
-% 	return;
-% end
-% % pos = h_draw.getPosition;
-% BW = createMask(h_draw);
-% B = bwboundaries(BW, 'noholes');
-% boundary = B{1};
-% CaSignal.TempROI = {y_start, y_end, x_start, x_end, BW, boundary, CaSignal.TempROI{7}, 'T'};
-% 
-% if CaSignal.TempROI{7} <= CaSignal.ROI_num
-% 	CaSignal.ROIs{CaSignal.TempROI{7}} = CaSignal.TempROI;
-% end
-% 
-% CaSignal = update_subimage_show(handles, CaSignal);
 
 
 
@@ -207,8 +166,7 @@ if CaSignal.TempROI{7} <= CaSignal.ROI_num && CaSignal.TempROI{8} == 'T'
 	set(handles.ROINumShowText, 'String', num2str(CaSignal.ROI_T_num));
 	CaSignal.ROIs{CaSignal.TempROI{7}}{8} = 'F';
 	CaSignal.TempROI{8} = 'F';
-	CaSignal = update_image_show(handles, CaSignal);
-	CaSignal.h_image.ButtonDownFcn = {@Image_ButtonDownFcn, handles};
+	CaSignal = Update_Image_Fcn(handles, CaSignal);
 	CaSignal = update_subimage_show(handles, CaSignal);
 end
 
@@ -216,8 +174,7 @@ end
 % --- Executes on button press in FindNextButton.
 function FindNextButton_Callback(hObject, eventdata, handles)
 global CaSignal
-CaSignal = update_image_show(handles, CaSignal);
-CaSignal.h_image.ButtonDownFcn = {@Image_ButtonDownFcn, handles};
+CaSignal = Update_Image_Fcn(handles, CaSignal);
 CaSignal = find_next_fcn(handles, CaSignal);
 
 
@@ -234,8 +191,7 @@ else
 	set(handles.MaxBox,'Value', 0);
 	set(handles.MaxMeanBox,'Value', 0);
 end
-CaSignal = update_image_show(handles, CaSignal);
-CaSignal.h_image.ButtonDownFcn = {@Image_ButtonDownFcn, handles};
+CaSignal = Update_Image_Fcn(handles, CaSignal);
 CaSignal = update_subimage_show(handles, CaSignal);
 
 
@@ -252,8 +208,7 @@ else
 	set(handles.MaxBox,'Value', 0);
 	set(handles.MaxMeanBox,'Value', 0);
 end
-CaSignal = update_image_show(handles, CaSignal);
-CaSignal.h_image.ButtonDownFcn = {@Image_ButtonDownFcn, handles};
+CaSignal = Update_Image_Fcn(handles, CaSignal);
 CaSignal = update_subimage_show(handles, CaSignal);
 
 
@@ -269,8 +224,7 @@ else
 	set(handles.MaxBox,'Value', 0);
 	set(handles.MaxMeanBox,'Value', 0);
 end
-CaSignal = update_image_show(handles, CaSignal);
-CaSignal.h_image.ButtonDownFcn = {@Image_ButtonDownFcn, handles};
+CaSignal = Update_Image_Fcn(handles, CaSignal);
 CaSignal = update_subimage_show(handles, CaSignal);
 
 
@@ -278,8 +232,7 @@ CaSignal = update_subimage_show(handles, CaSignal);
 function slider1_Callback(hObject, eventdata, handles)
 global CaSignal
 CaSignal.top_percentile = get(hObject, 'Value');
-CaSignal = update_image_show(handles, CaSignal);
-CaSignal.h_image.ButtonDownFcn = {@Image_ButtonDownFcn, handles};
+CaSignal = Update_Image_Fcn(handles, CaSignal);
 CaSignal = update_subimage_show(handles, CaSignal);
 
 % --- Executes during object creation, after setting all properties.
@@ -293,8 +246,7 @@ end
 function slider2_Callback(hObject, eventdata, handles)
 global CaSignal
 CaSignal.bottom_percentile = get(hObject, 'Value');
-CaSignal = update_image_show(handles, CaSignal);
-CaSignal.h_image.ButtonDownFcn = {@Image_ButtonDownFcn, handles};
+CaSignal = Update_Image_Fcn(handles, CaSignal);
 CaSignal = update_subimage_show(handles, CaSignal);
 
 % --- Executes during object creation, after setting all properties.
@@ -326,8 +278,7 @@ if get(handles.MaxBox,'Value') == 1
 elseif get(handles.MeanBox,'Value') == 1
 	CaSignal.showing_image = CaSignal.mean_images(:, :, CaSignal.current_trial);
 end
-CaSignal = update_image_show(handles, CaSignal);
-CaSignal.h_image.ButtonDownFcn = {@Image_ButtonDownFcn, handles};
+CaSignal = Update_Image_Fcn(handles, CaSignal);
 CaSignal = update_subimage_show(handles, CaSignal);
 set(handles.TrialNumEdit, 'String', sprintf('%d/%d', CaSignal.current_trial, CaSignal.total_trial));
 
@@ -344,8 +295,7 @@ if get(handles.MaxBox,'Value') == 1
 elseif get(handles.MeanBox,'Value') == 1
 	CaSignal.showing_image = CaSignal.mean_images(:, :, CaSignal.current_trial);
 end
-CaSignal = update_image_show(handles, CaSignal);
-CaSignal.h_image.ButtonDownFcn = {@Image_ButtonDownFcn, handles};
+CaSignal = Update_Image_Fcn(handles, CaSignal);
 CaSignal = update_subimage_show(handles, CaSignal);
 set(handles.TrialNumEdit, 'String', sprintf('%d/%d', CaSignal.current_trial, CaSignal.total_trial));
 
@@ -374,8 +324,7 @@ if get(handles.MaxBox,'Value') == 1
 elseif get(handles.MeanBox,'Value') == 1
 	CaSignal.showing_image = CaSignal.mean_images(:, :, CaSignal.current_trial);
 end
-CaSignal = update_image_show(handles, CaSignal);
-CaSignal.h_image.ButtonDownFcn = {@Image_ButtonDownFcn, handles};
+CaSignal = Update_Image_Fcn(handles, CaSignal);
 CaSignal = update_subimage_show(handles, CaSignal);
 set(handles.TrialNumEdit, 'String', sprintf('%d/%d', CaSignal.current_trial, CaSignal.total_trial));
 
@@ -462,8 +411,7 @@ CaSignal.showing_image = CaSignal.mean_images(:, :, CaSignal.current_trial);
 CaSignal.SummarizedMask = zeros(size(CaSignal.imageData, 1), size(CaSignal.imageData, 2));
 CaSignal.top_percentile = 100.0;
 CaSignal.bottom_percentile = 0.0;
-CaSignal = update_image_show(handles, CaSignal);
-CaSignal.h_image.ButtonDownFcn = {@Image_ButtonDownFcn, handles};
+CaSignal = Update_Image_Fcn(handles, CaSignal);
 CaSignal.cell_score = ones(size(CaSignal.max_mean_image));
 CaSignal.cell_score_mask = ones(size(CaSignal.max_mean_image));
 set(handles.LoadROIButton, 'Enable', 'on');
@@ -484,7 +432,7 @@ global CaSignal
 if isequal(filename,0)
 	return;
 end
-ROIs = load_roi(fullfile(pathname, filename), CaSignal.ROIDiameter);
+ROIs = load_roi(fullfile(pathname, filename), CaSignal);
 CaSignal.ROIs = ROIs;
 CaSignal.ROI_num = size(CaSignal.ROIs, 2);
 CaSignal.ROI_T_num = CaSignal.ROI_num;
@@ -502,8 +450,7 @@ for i = 1:CaSignal.ROI_num
 	tempMask(y_start:y_end, x_start:x_end) = tempRoi(1:y_end - y_start + 1, 1:x_end - x_start + 1);
 	CaSignal.SummarizedMask(tempMask == 1) = CaSignal.ROIs{i}{7};
 end
-CaSignal = update_image_show(handles, CaSignal);
-CaSignal.h_image.ButtonDownFcn = {@Image_ButtonDownFcn, handles};
+CaSignal = Update_Image_Fcn(handles, CaSignal);
 
 
 % --- Executes on button press in RegisterROIButton.
@@ -536,8 +483,7 @@ for i = 1:CaSignal.ROI_num
 	tempMask(y_start:y_end, x_start:x_end) = tempRoi(1:y_end - y_start + 1, 1:x_end - x_start + 1);
 	CaSignal.SummarizedMask(tempMask == 1) = CaSignal.ROIs{i}{7};
 end
-CaSignal = update_image_show(handles, CaSignal);
-CaSignal.h_image.ButtonDownFcn = {@Image_ButtonDownFcn, handles};
+CaSignal = Update_Image_Fcn(handles, CaSignal);
 
 
 % --- Executes on key press with focus on figure1 or any of its controls.
@@ -599,8 +545,7 @@ switch answer
 		CaSignal.ROI_T_num = 0;
 		CaSignal.TempROI = {};
 		CaSignal.SummarizedMask = zeros(size(CaSignal.imageData, 1), size(CaSignal.imageData, 2));
-		CaSignal = update_image_show(handles, CaSignal);
-		CaSignal.h_image.ButtonDownFcn = {@Image_ButtonDownFcn, handles};
+		CaSignal = Update_Image_Fcn(handles, CaSignal);
 		CaSignal = update_subimage_show(handles, CaSignal);
     case 'No'
 		return

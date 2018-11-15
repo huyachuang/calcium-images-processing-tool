@@ -28,23 +28,7 @@ function registered_ROIs = register_roi(ROIs, moving_image, fixed_image, CaSigna
 		[ys, xs] = find(registered_masks{i});
 		x = uint16(median(xs, 'all'));
 		y = uint16(median(ys, 'all'));
-		x_start = x - ROIDiameter;
-		if x_start < 1
-			x_start = 1;
-		end
-		x_end = x + ROIDiameter;
-		if x_end > size(moving_image, 2)
-			x_end = size(moving_image, 2);
-		end
-		
-		y_start = y - ROIDiameter;
-		if y_start < 1
-			y_start = 1;
-		end
-		y_end = y + ROIDiameter;
-		if y_end > size(moving_image, 1)
-			y_end = size(moving_image, 1);
-		end
+		[x_start, x_end, y_start, y_end] = generate_loaction_boxes(CaSignal, x, y);
 		I = uint8(zeros(2 * ROIDiameter + 1,  2 * ROIDiameter + 1, size(CaSignal.imageData, 3)));
 		I(1:y_end - y_start + 1, 1:x_end - x_start + 1,:) = CaSignal.imageData(y_start:y_end, x_start:x_end,:);
 		mask = semanticseg(I, CaSignal.localFCNModel.net);

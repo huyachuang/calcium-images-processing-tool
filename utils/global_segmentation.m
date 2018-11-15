@@ -11,13 +11,6 @@ function CaSignal = global_segmentation(CaSignal)
 	
 	for i = 1:CaSignal.ROI_num
 		temp_ROI = CaSignal.ROIs{i};
-		y_start = temp_ROI{1};
-		y_end = temp_ROI{2};
-		x_start = temp_ROI{3};
-		x_end = temp_ROI{4};
-		C_int = temp_ROI{5}
-		tempMask = zeros(size(CaSignal.imageData, 1), size(CaSignal.imageData, 2));
-		tempMask(y_start:y_end, x_start:x_end) = C_int(1:y_end - y_start + 1, 1:x_end - x_start + 1);
-		CaSignal.cell_score_mask = and(CaSignal.cell_score_mask, 1 - tempMask);
+		CaSignal = update_cell_score_map(CaSignal, temp_ROI);
 	end
 end

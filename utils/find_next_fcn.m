@@ -3,22 +3,7 @@ function CaSignal = find_next_fcn(handles, CaSignal)
 		CaSignal.cell_score = CaSignal.cell_score .* CaSignal.cell_score_mask;
 		maximum = max(CaSignal.cell_score(:));
 		[y, x] = find(CaSignal.cell_score == maximum);
-		x_start = x - CaSignal.ROIDiameter;
-		if x_start < 1 
-			x_start = 1;
-		end
-		x_end = x + CaSignal.ROIDiameter;
-		if x_end > size(CaSignal.imageData, 2)
-			x_end = size(CaSignal.imageData, 2);
-		end
-		y_start = y - CaSignal.ROIDiameter;
-		if y_start < 1
-			y_start = 1;
-		end
-		y_end = y + CaSignal.ROIDiameter;
-		if y_end > size(CaSignal.imageData, 1)
-			y_end = size(CaSignal.imageData, 1);
-		end
+		[x_start, x_end, y_start, y_end] = generate_loaction_boxes(CaSignal, x, y);
 		axes(handles.ImageShowAxes);
 		hold on
 		plot(x, y, 'r*', 'LineWidth', 3);
@@ -32,9 +17,10 @@ function CaSignal = find_next_fcn(handles, CaSignal)
 		B = bwboundaries(BW, 'noholes');
 		boundary = B{1};
 		CaSignal.TempROI = {y_start, y_end, x_start, x_end, C_int, boundary, CaSignal.ROI_num + 1, 'T'};
-		tempMask = zeros(size(CaSignal.imageData, 1), size(CaSignal.imageData, 2));
-		tempMask(y_start:y_end, x_start:x_end) = C_int(1:y_end - y_start + 1, 1:x_end - x_start + 1);
-		CaSignal.cell_score_mask = and(CaSignal.cell_score_mask, 1 - tempMask);
+% 		tempMask = zeros(size(CaSignal.imageData, 1), size(CaSignal.imageData, 2));
+% 		tempMask(y_start:y_end, x_start:x_end) = C_int(1:y_end - y_start + 1, 1:x_end - x_start + 1);
+% 		CaSignal.cell_score_mask = and(CaSignal.cell_score_mask, 1 - tempMask);
+		CaSignal = update_cell_score_map(CaSignal, CaSignal.TempROI);
 		CaSignal = update_subimage_show(handles, CaSignal);
 	end
 end
