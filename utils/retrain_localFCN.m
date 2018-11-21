@@ -1,7 +1,7 @@
 function CaSignal = retrain_localFCN(CaSignal, datapath)
 
-	train_dir = fullfile(CaSignal.localFCNModelPathName, 'temp_training_dataset');
-	disp('generating training data...');
+	train_dir = fullfile(CaSignal.localFCNModelPathName, 'local_fcn_temp_training_dataset');
+	disp('generating training data');
 	train_dir = generate_localFCN_training_data(datapath, train_dir, CaSignal.ROIDiameter, 10);
 	if isequal(train_dir, '')
 		return
@@ -45,6 +45,8 @@ function CaSignal = retrain_localFCN(CaSignal, datapath)
 		end
 	end
 	CaSignal.localFCNModel.net = net;
+	CaSignal.localFCNModelFilename = file;
+	CaSignal.localFCNModelPathName = path;
 	save(fullfile(path, file), 'net');
 	
 	

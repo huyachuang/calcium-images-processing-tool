@@ -1,7 +1,7 @@
 function CaSignal = retrain_globalFCN(CaSignal, datapath)
 
-	train_dir = fullfile(CaSignal.globalFCNModelPathName, 'temp_training_dataset');
-	disp('generating training data...');
+	train_dir = fullfile(CaSignal.globalFCNModelPathName, 'global_fcn_temp_training_dataset');
+	disp('generating training data');
 	train_dir = generate_globalFCN_training_data(datapath, train_dir, 50);
 	if isequal(train_dir, '')
 		return
@@ -53,5 +53,7 @@ function CaSignal = retrain_globalFCN(CaSignal, datapath)
 		end
 	end
 	CaSignal.global_FCNModel.net = net;
+	CaSignal.globalFCNModelFilename = file;
+	CaSignal.globalFCNModelPathName = path;
 	save(fullfile(path, file), 'net');
 end
