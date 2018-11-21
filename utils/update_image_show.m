@@ -1,5 +1,6 @@
-function CaSignal = update_image_show(handles, CaSignal)
+function CaSignal = update_image_show(handles, CaSignal, is_restore_zoom)
 	axes(handles.ImageShowAxes);
+	L = get(gca,{'xlim','ylim'});
 	img = CaSignal.showing_image;
 	p_bottom = prctile(img,CaSignal.bottom_percentile, 'all');
 	p_top = prctile(img,CaSignal.top_percentile, 'all');
@@ -42,4 +43,8 @@ function CaSignal = update_image_show(handles, CaSignal)
 		end
 	end
 	hold off;
+	if is_restore_zoom
+		zoom reset
+		set(gca,{'xlim','ylim'},L);
+	end
 end

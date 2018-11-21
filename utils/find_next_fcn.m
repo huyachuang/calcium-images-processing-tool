@@ -15,12 +15,11 @@ function CaSignal = find_next_fcn(handles, CaSignal)
 		C_int = uint8(C) - 1;
 		BW = imbinarize(C_int);
 		B = bwboundaries(BW, 'noholes');
-		boundary = B{1};
-		CaSignal.TempROI = {y_start, y_end, x_start, x_end, C_int, boundary, CaSignal.ROI_num + 1, 'T'};
-% 		tempMask = zeros(size(CaSignal.imageData, 1), size(CaSignal.imageData, 2));
-% 		tempMask(y_start:y_end, x_start:x_end) = C_int(1:y_end - y_start + 1, 1:x_end - x_start + 1);
-% 		CaSignal.cell_score_mask = and(CaSignal.cell_score_mask, 1 - tempMask);
-		CaSignal = update_cell_score_map(CaSignal, CaSignal.TempROI);
-		CaSignal = update_subimage_show(handles, CaSignal);
+		if numel(B) > 0
+			boundary = B{1};
+			CaSignal.TempROI = {y_start, y_end, x_start, x_end, C_int, boundary, CaSignal.ROI_num + 1, 'T'};
+			CaSignal = update_cell_score_map(CaSignal, CaSignal.TempROI);
+			CaSignal = update_subimage_show(handles, CaSignal, true);
+		end
 	end
 end
