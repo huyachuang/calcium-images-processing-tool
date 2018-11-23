@@ -22,7 +22,7 @@ function varargout = one_clicke(varargin)
 
 % Edit the above text to modify the response to help one_clicke
 
-% Last Modified by GUIDE v2.5 21-Nov-2018 16:51:56
+% Last Modified by GUIDE v2.5 23-Nov-2018 09:35:10
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -66,15 +66,13 @@ CaSignal.ROIs = {};
 CaSignal.ROI_num = 0;
 CaSignal.ROI_T_num = 0;
 CaSignal.TempROI = {};
-CaSignal.ROI_plot_handles = {};
 CaSignal.ROIDiameter = 12;
 
-
+% about showing image
 CaSignal.imagePathName = pwd;
 CaSignal.showing_image = [];
 CaSignal.imageFilename = '';
 CaSignal.imagePathName = '';
-% about showing image
 CaSignal.mean_images = [];
 CaSignal.max_images = [];
 CaSignal.max_mean_image = [];
@@ -91,12 +89,11 @@ CaSignal.imageData = [];
 CaSignal.localFCNModelFilename = '';
 CaSignal.localFCNModelPathName = '';
 CaSignal.localFCNModel = [];
-CaSignal.globalFCNModelFilename = '';
-CaSignal.globalFCNModelPathName = '';
-CaSignal.global_FCNModel = [];
+CaSignal.ROIDetectorFilename = '';
+CaSignal.ROIDetectorPathName = '';
+CaSignal.ROIDetector = [];
 
 set(handles.ModelPathEdit, 'String', pwd);
-set(handles.GlobalModelPathEdit, 'String', pwd);
 set(handles.ROIDetectorPathEdit, 'String', pwd);
 cd(fileparts(which(mfilename)));
 addpath('./utils');
@@ -146,8 +143,6 @@ disp('Done')
 set(handles.DrawROICheckbox, 'Enable', 'on');
 set(handles.RegisterROIButton, 'Enable', 'on');
 set(handles.LocalFCNRetrainButton, 'Enable', 'on');
-set(handles.ChooseGlobalModelButton, 'Enable', 'on');
-set(handles.ChooseROIDetectorButton, 'Enable', 'on');
 
 
 function ModelPathEdit_Callback(hObject, eventdata, handles)
@@ -198,13 +193,6 @@ if numel(CaSignal.TempROI) > 0 && CaSignal.TempROI{7} <= CaSignal.ROI_num && CaS
 	CaSignal = Update_Image_Fcn(handles, CaSignal, true);
 	CaSignal = update_subimage_show(handles, CaSignal, true);
 end
-
-
-% --- Executes on button press in FindNextButton.
-function FindNextButton_Callback(hObject, eventdata, handles)
-global CaSignal
-CaSignal = Update_Image_Fcn(handles, CaSignal, true);
-CaSignal = find_next_fcn(handles, CaSignal);
 
 
 
@@ -358,41 +346,6 @@ CaSignal = update_subimage_show(handles, CaSignal, true);
 set(handles.TrialNumEdit, 'String', sprintf('%d/%d', CaSignal.current_trial, CaSignal.total_trial));
 
 
-
-function GlobalModelPathEdit_Callback(hObject, eventdata, handles)
-
-
-% --- Executes during object creation, after setting all properties.
-function GlobalModelPathEdit_CreateFcn(hObject, eventdata, handles)
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
-
-% --- Executes on button press in ChooseGlobalModelButton.
-function ChooseGlobalModelButton_Callback(hObject, eventdata, handles)
-global CaSignal
-dataPath = get(handles.GlobalModelPathEdit,'String');
-[filename, pathName] = uigetfile(fullfile(dataPath, '*.mat'), 'Load FCN model File');
-if isequal(filename,0)
-	return;
-end
-set(handles.figure1, 'pointer', 'watch')
-drawnow;
-set(handles.GlobalModelPathEdit,'String', fullfile(pathName, filename));
-disp('Loading Global FCN Model');
-CaSignal.global_FCNModel = load(fullfile(pathName, filename));
-disp('Done')
-CaSignal.globalFCNModelFilename = filename;
-CaSignal.globalFCNModelPathName = pathName;
-disp('Running Global Segmentation');
-CaSignal = global_segmentation(CaSignal);
-disp('Done')
-set(handles.NextROICheckBox,'Enable', 'on');
-set(handles.FindNextButton,'Enable', 'on');
-set(handles.GlobalFCNRetrainButton,'Enable', 'on');
-set(handles.figure1, 'pointer', 'arrow')
-
 % --------------------------------------------------------------------
 function SaveROIInfoTool_ClickedCallback(hObject, eventdata, handles)
 global CaSignal
@@ -443,8 +396,6 @@ CaSignal.SummarizedMask = zeros(size(CaSignal.imageData, 1), size(CaSignal.image
 CaSignal.top_percentile = 100.0;
 CaSignal.bottom_percentile = 0.0;
 CaSignal = Update_Image_Fcn(handles, CaSignal, false);
-CaSignal.cell_score = ones(size(CaSignal.max_mean_image));
-CaSignal.cell_score_mask = ones(size(CaSignal.max_mean_image));
 set(handles.LoadROIButton, 'Enable', 'on');
 set(handles.ModelChooseButton, 'Enable', 'on');
 % set(handles.ModelPathEdit, 'String', CaSignal.imagePathName);
@@ -484,8 +435,11 @@ global CaSignal
 if isequal(filename,0)
 	return;
 end
+set(handles.figure1, 'pointer', 'watch')
+drawnow;
 [mean_images, max_images] = load_image_data(pathname);
 max_mean_image = max(mean_images, [], 3);
+set(handles.figure1, 'pointer', 'arrow')
 [filename, pathname] = uigetfile(fullfile(pathname, '*.mat'), 'Load Previous Session ROI File');
 if isequal(filename,0)
 	return;
@@ -584,24 +538,6 @@ if numel(datapath) ~= 0
 		fullfile(CaSignal.localFCNModelPathName, CaSignal.localFCNModelFilename));
 end
 
-
-% --- Executes on button press in GlobalFCNRetrainButton.
-function GlobalFCNRetrainButton_Callback(hObject, eventdata, handles)
-global CaSignal
-datapath = uigetfile_n_dir(CaSignal.imagePathName, 'Chose folders used to train');
-if numel(datapath) ~= 0
-	CaSignal = retrain_globalFCN(CaSignal, datapath);
-	set(handles.GlobalModelPathEdit,'String', ...
-		fullfile(CaSignal.globalFCNModelPathName, CaSignal.globalFCNModelFilename));
-end
-
-
-% --- Executes on button press in NextROICheckBox.
-function NextROICheckBox_Callback(hObject, eventdata, handles)
-
-
-
-
 function CurrentROINoEdit_Callback(hObject, eventdata, handles)
 global CaSignal
 current_roi_no = str2double(get(hObject,'String'));
@@ -682,3 +618,46 @@ if numel(datapath) ~= 0
 	set(handles.ROIDetectorPathEdit,'String', ...
 		fullfile(CaSignal.ROIDetectorPathName, CaSignal.ROIDetectorFilename));
 end
+
+
+% --- Executes on button press in NextROIButton.
+function NextROIButton_Callback(hObject, eventdata, handles)
+global CaSignal
+current_roi_no = str2double(get(handles.CurrentROINoEdit,'String'));
+next_roi_no = floor(current_roi_no) + 1;
+if next_roi_no > CaSignal.ROI_num
+	next_roi_no = 1;
+end
+CaSignal.TempROI = CaSignal.ROIs{next_roi_no};
+while ~CaSignal.TempROI{8}
+	next_roi_no  = next_roi_no + 1;
+	if next_roi_no > CaSignal.ROI_num
+		next_roi_no = 1;
+	end
+	CaSignal.TempROI = CaSignal.ROIs{next_roi_no};
+end
+set(handles.CurrentROINoEdit, 'String', num2str(next_roi_no));
+CaSignal = update_subimage_show(handles, CaSignal, true);
+CaSignal = Update_Image_Fcn(handles, CaSignal, true);
+
+
+% --- Executes on button press in PreviousROIButton.
+function PreviousROIButton_Callback(hObject, eventdata, handles)
+global CaSignal
+current_roi_no = str2double(get(handles.CurrentROINoEdit,'String'));
+previous_roi_no = floor(current_roi_no) - 1;
+if previous_roi_no < 1
+	previous_roi_no = CaSignal.ROI_num;
+end
+CaSignal.TempROI = CaSignal.ROIs{previous_roi_no};
+
+while ~CaSignal.TempROI{8}
+	previous_roi_no  = previous_roi_no + 1;
+	if previous_roi_no < 1
+		previous_roi_no = CaSignal.ROI_num;
+	end
+	CaSignal.TempROI = CaSignal.ROIs{previous_roi_no};
+end
+set(handles.CurrentROINoEdit, 'String', num2str(previous_roi_no));
+CaSignal = update_subimage_show(handles, CaSignal, true);
+CaSignal = Update_Image_Fcn(handles, CaSignal, true);
