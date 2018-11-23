@@ -1,13 +1,24 @@
 function CaSignal = retrain_roi_detector(CaSignal, datapath)
+	%set parameter
+	title = 'Set Training Parameter';
+	prompt = {'InitialLearnRate:', 'MaxEpochs:', 'MiniBatchSize:', 'ValidationFrequency'};
+	definput = {num2str(3e-4), num2str(10), num2str(16), num2str(10)};
+	dims = [1 100];
+	answer = inputdlg(prompt, title, dims, definput);
+	InitialLearnRate = str2double(answer{1});
+	MaxEpochs = str2double(answer{2});
+	MiniBatchSize = str2double(answer{3});
+	ValidationFrequency = str2double(answer{4});
 	%prepare training data
 	train_dir = fullfile(CaSignal.ROIDetectorPathName, 'roi_detector_temp_training_dataset');
 	disp('Generating training data');
 	bin_size = CaSignal.ROIDiameter*2+1;
-	step_size = 10;
+	step_size = floor(CaSignal.ROIDiameter/2);
 	train_dir = generate_roi_detector_training_data(datapath, train_dir, bin_size, step_size);
 	disp('Done');
 	%load and organize traning data
 	categories = {'cell', 'background'};
+	disp(train_dir)
 	imds = imageDatastore(fullfile(train_dir, categories), 'LabelSource', 'foldernames');
 	tb1= countEachLabel(imds);
 	background_num = tb1.Count(1);
@@ -36,12 +47,12 @@ function CaSignal = retrain_roi_detector(CaSignal, datapath)
 	augimdsValidation = augmentedImageDatastore(inputSize(1:2),valSet);
 	% start training
 	options = trainingOptions('sgdm', ...
-		'MiniBatchSize',16, ...
-		'MaxEpochs',6, ...
-		'InitialLearnRate',3e-4, ...
+		'MiniBatchSize',MiniBatchSize, ...
+		'MaxEpochs',MaxEpochs, ...
+		'InitialLearnRate',InitialLearnRate, ...
 		'Shuffle','every-epoch', ...
 		'ValidationData',augimdsValidation, ...
-		'ValidationFrequency',10, ...
+		'ValidationFrequency',ValidationFrequency, ...
 		'Verbose',false, ...
 		'Plots','training-progress');
 	net = trainNetwork(augimdsTrain,lgraph,options);

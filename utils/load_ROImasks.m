@@ -5,10 +5,10 @@ function ROImasks = load_ROImasks(src_dir)
 		ROI_file = [d.name];
 		ROIinfo = load(ROI_file);
 	elseif numel(d) < 1
-		errordlg(['Not find any ROIinfo file in ', temp_dir], 'File Error');
+		errordlg(['Not find any ROIinfo file in ', src_dir], 'File Error');
 		return;
 	elseif numel(d) > 1
-		errordlg(['More than one ROIinfo file in ', temp_dir], 'File Error');
+		errordlg(['More than one ROIinfo file in ', src_dir], 'File Error');
 		return;
 	end
 

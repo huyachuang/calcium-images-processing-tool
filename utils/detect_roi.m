@@ -1,7 +1,11 @@
 function CaSignal = detect_roi(CaSignal)
-	bin_size = 25;
-	step_size = 10;
+	% config image patch size and step size
+	bin_size = 2 * CaSignal.ROIDiameter + 1;
+	step_size = floor(CaSignal.ROIDiameter / 2);
+	% prepare data
 	net = CaSignal.ROIDetector.net;
+	lgraph = layerGraph(net);
+	inputSize = lgraph.Layers(1).InputSize;
 	img_patches_boxes = get_square_patches_boxes(CaSignal.imageData, bin_size, step_size);
 	img_patches_boxes = reshape(img_patches_boxes, size(img_patches_boxes, 1)*size(img_patches_boxes, 2), size(img_patches_boxes, 3));
 	img_patches = zeros([bin_size, bin_size, size(CaSignal.imageData, 3), size(img_patches_boxes, 1)]);
@@ -9,17 +13,24 @@ function CaSignal = detect_roi(CaSignal)
 		img_patches(:, :, :, i) = CaSignal.imageData(img_patches_boxes(i, 1):img_patches_boxes(i, 1)+img_patches_boxes(i, 3)-1,...
 				img_patches_boxes(i, 2):img_patches_boxes(i, 2)+img_patches_boxes(i, 4)-1, :);
 	end
-	[YPred_patches, probs_patches] = classify(net,img_patches);
+	% detect
+	[YPred_patches, probs_patches] = classify(net,imresize(img_patches, inputSize(1:2)));
+	% find roi patches used to do segmentation
 	roi_probs = probs_patches(YPred_patches == categorical({'cell'}), :);
 	roi_probs = max(roi_probs, [], 2);
 	roi_boxes = img_patches_boxes(YPred_patches == categorical({'cell'}), :);
 	roi_patches = img_patches(:, :, :, YPred_patches == categorical({'cell'}));
-	roi_mask = semanticseg(roi_patches, CaSignal.localFCNModel.net, ...
+	% resize and do segmentation
+	fcn_lgraph = layerGraph(CaSignal.localFCNModel.net);
+	fcn_inputSize = fcn_lgraph.Layers(1).InputSize;
+	roi_mask = semanticseg(imresize(roi_patches, fcn_inputSize(1:2)), CaSignal.localFCNModel.net, ...
 								'MiniBatchSize',16, ...
 								'WriteLocation',fullfile(pwd, 'result'), ...
 								'Verbose',false);
 	roi_mask = uint8(roi_mask) - 1;
+	roi_mask = imresize(roi_mask, [bin_size, bin_size], 'Method', 'nearest');
 	roi_mask = imbinarize(roi_mask);
+	
 	[roi_patch_boxes_remain, roi_patch_scores_remain, roi_masks_remain] = ...
 		remove_redundant_roi(roi_boxes, roi_probs, roi_mask,...
 		size(CaSignal.imageData, 1), size(CaSignal.imageData, 2));

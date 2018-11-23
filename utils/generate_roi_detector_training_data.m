@@ -52,4 +52,5 @@ function training_data_path = generate_roi_detector_training_data(src_dir, dst_d
 			end
 		end
 	end
+	training_data_path = dst_dir;
 end

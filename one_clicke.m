@@ -22,7 +22,7 @@ function varargout = one_clicke(varargin)
 
 % Edit the above text to modify the response to help one_clicke
 
-% Last Modified by GUIDE v2.5 23-Nov-2018 09:35:10
+% Last Modified by GUIDE v2.5 23-Nov-2018 11:04:10
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -86,6 +86,7 @@ CaSignal.TempXY = [64, 64];
 CaSignal.SummarizedMask = [];
 %about machine learning
 CaSignal.imageData = [];
+
 CaSignal.localFCNModelFilename = '';
 CaSignal.localFCNModelPathName = '';
 CaSignal.localFCNModel = [];
@@ -143,6 +144,8 @@ disp('Done')
 set(handles.DrawROICheckbox, 'Enable', 'on');
 set(handles.RegisterROIButton, 'Enable', 'on');
 set(handles.LocalFCNRetrainButton, 'Enable', 'on');
+set(handles.ChooseROIDetectorButton, 'Enable', 'on');
+
 
 
 function ModelPathEdit_Callback(hObject, eventdata, handles)
@@ -661,3 +664,14 @@ end
 set(handles.CurrentROINoEdit, 'String', num2str(previous_roi_no));
 CaSignal = update_subimage_show(handles, CaSignal, true);
 CaSignal = Update_Image_Fcn(handles, CaSignal, true);
+
+
+% --- Executes on button press in SetROIDIAButton.
+function SetROIDIAButton_Callback(hObject, eventdata, handles)
+global CaSignal
+prompt = {'Enter ROI Diameter:'};
+title = 'Set ROI Diameter';
+dims = [1 35];
+definput = {num2str(CaSignal.ROIDiameter)};
+answer = inputdlg(prompt,title,dims,definput);
+CaSignal.ROIDiameter = str2double(answer{1});
