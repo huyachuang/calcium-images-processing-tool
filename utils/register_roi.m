@@ -35,7 +35,18 @@ function registered_ROIs = register_roi(ROIs, moving_image, fixed_image, CaSigna
 		mask = uint8(mask) - 1;
 		BW = imbinarize(mask);
 		B = bwboundaries(BW, 'noholes');
-		boundary = B{1};
-		registered_ROIs{i} = {y_start, y_end, x_start, x_end, mask, boundary, i, 'T'};
+		B_original = bwboundaries(registered_masks{i}, 'noholes');
+		boundary = B_original{1};
+		if numel(B) == 1
+			boundary_temp = B{1};
+			x = boundary_temp(:,2);
+			y = boundary_temp(:,1);
+			w = max(x(:)) - min(x(:));
+			h = max(y(:)) - min(y(:));
+			if w > 7 && h > 7
+				boundary = boundary_temp;
+			end
+		end
+		registered_ROIs{i} = {y_start, y_end, x_start, x_end, mask, boundary, i, 'T'};	
 	end
 end
