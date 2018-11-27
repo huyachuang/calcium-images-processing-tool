@@ -1,17 +1,6 @@
-function ROImasks = load_ROImasks(src_dir)
+function ROImasks = load_ROImasks(ROI_file)
 	ROImasks = [];
-	d = rdir(fullfile(src_dir, '\**\ROI*.mat'));
-	if numel(d) == 1
-		ROI_file = [d.name];
-		ROIinfo = load(ROI_file);
-	elseif numel(d) < 1
-		errordlg(['Not find any ROIinfo file in ', src_dir], 'File Error');
-		return;
-	elseif numel(d) > 1
-		errordlg(['More than one ROIinfo file in ', src_dir], 'File Error');
-		return;
-	end
-
+	ROIinfo = load(ROI_file);
 	if isfield(ROIinfo, 'ROIinfoBU')
 		ROImasks = ROIinfo.ROIinfoBU.ROImask;
 	elseif isfield(ROIinfo, 'ROIInfo')

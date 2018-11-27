@@ -417,6 +417,8 @@ global CaSignal
 if isequal(filename,0)
 	return;
 end
+set(handles.figure1, 'pointer', 'watch');
+drawnow;
 ROIs = load_roi(fullfile(pathname, filename), CaSignal);
 CaSignal.ROIs = ROIs;
 CaSignal.ROI_num = size(CaSignal.ROIs, 2);
@@ -429,6 +431,7 @@ end
 set(handles.ROINumShowText, 'String', num2str(CaSignal.ROI_T_num));
 CaSignal = generate_summarizedMask(CaSignal);
 CaSignal = Update_Image_Fcn(handles, CaSignal, true);
+set(handles.figure1, 'pointer', 'arrow');
 
 
 % --- Executes on button press in RegisterROIButton.
@@ -675,3 +678,4 @@ dims = [1 35];
 definput = {num2str(CaSignal.ROIDiameter)};
 answer = inputdlg(prompt,title,dims,definput);
 CaSignal.ROIDiameter = str2double(answer{1});
+set(handles.ROIDiameterShowText, 'String', answer{1});

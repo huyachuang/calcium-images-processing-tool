@@ -12,7 +12,19 @@ function training_data_path = generate_localFCN_training_data(src_dir, dst_dir, 
 		[mean_images, ~] = load_image_data(temp_dir);
 		max_mean_image = max(mean_images, [], 3);
 		img = gray2RGB(max_mean_image);
-		ROImasks = load_ROImasks(temp_dir);
+		
+		d = rdir(fullfile(temp_dir, '\**\ROI*.mat'));
+		if numel(d) == 1
+			ROI_file = [d.name];
+		elseif numel(d) < 1
+			errordlg(['Not find any ROIinfo file in ', src_dir], 'File Error');
+			return;
+		elseif numel(d) > 1
+			errordlg(['More than one ROIinfo file in ', src_dir], 'File Error');
+			return;
+		end
+		ROImasks = load_ROImasks(ROI_file);
+		
 		if numel(ROImasks) == 0
 			return
 		end

@@ -18,12 +18,24 @@ function training_data_path = generate_roi_detector_training_data(src_dir, dst_d
 	overlap_th = 0.75;
 	%go through src+_dirs for original imgs and labels
 	for i = 1:numel(src_dir)
+		%load image
 		data_path = src_dir{i};
 		[mean_images, ~] = load_image_data(data_path);
 		img = max(mean_images, [], 3);
 		img = gray2RGB(img);
 		img_patches_boxes = get_square_patches_boxes(img, bin_size, step_size);
-		ROImasks = load_ROImasks(data_path);
+		%load label
+		d = rdir(fullfile(data_path, '\**\ROI*.mat'));
+		if numel(d) == 1
+			ROI_file = [d.name];
+		elseif numel(d) < 1
+			errordlg(['Not find any ROIinfo file in ', src_dir], 'File Error');
+			return;
+		elseif numel(d) > 1
+			errordlg(['More than one ROIinfo file in ', src_dir], 'File Error');
+			return;
+		end
+		ROImasks = load_ROImasks(ROI_file);
 		if numel(ROImasks) == 0
 			return
 		end
