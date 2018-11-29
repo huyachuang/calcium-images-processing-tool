@@ -25,11 +25,14 @@ function CaSignal = Image_buttonDown_fcn(hObject,eventdata, handles, CaSignal)
 			CaSignal.TempROI = {y_start, y_end, x_start, x_end, C_int, boundary, CaSignal.ROI_num + 1, 'T'};
 			CaSignal = update_subimage_show(handles, CaSignal, true);
 		end
+		CaSignal.RedrawBasedOnTempROI = true;
 	elseif ~isequal(CaSignal.SummarizedMask, []) && CaSignal.SummarizedMask(y, x) > 0
 		CaSignal.TempROI = CaSignal.ROIs{CaSignal.SummarizedMask(y, x)};
 		set(handles.CurrentROINoEdit, 'String', num2str(CaSignal.TempROI{7}));
 		CaSignal = update_subimage_show(handles, CaSignal, true);
+		CaSignal.RedrawBasedOnTempROI = true;
 	else
 		CaSignal = update_subimage_show(handles, CaSignal, false);
+		CaSignal.RedrawBasedOnTempROI = false;
 	end
 end

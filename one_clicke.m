@@ -83,6 +83,7 @@ CaSignal.top_percentile = 100.0;
 CaSignal.bottom_percentile = 0.0;
 % about showing sub_image
 CaSignal.TempXY = [64, 64];
+CaSignal.RedrawBasedOnTempROI = true;
 CaSignal.SummarizedMask = [];
 %about machine learning
 CaSignal.imageData = [];
@@ -554,6 +555,7 @@ elseif current_roi_no < 1
 	current_roi_no = 1;
 end
 CaSignal.TempROI = CaSignal.ROIs{current_roi_no};
+CaSignal.RedrawBasedOnTempROI = true;
 CaSignal = update_subimage_show(handles, CaSignal, true);
 CaSignal = Update_Image_Fcn(handles, CaSignal, true);
 
@@ -635,6 +637,7 @@ if next_roi_no > CaSignal.ROI_num
 	next_roi_no = 1;
 end
 CaSignal.TempROI = CaSignal.ROIs{next_roi_no};
+CaSignal.RedrawBasedOnTempROI = true;
 while ~CaSignal.TempROI{8}
 	next_roi_no  = next_roi_no + 1;
 	if next_roi_no > CaSignal.ROI_num
@@ -656,7 +659,7 @@ if previous_roi_no < 1
 	previous_roi_no = CaSignal.ROI_num;
 end
 CaSignal.TempROI = CaSignal.ROIs{previous_roi_no};
-
+CaSignal.RedrawBasedOnTempROI = true;
 while ~CaSignal.TempROI{8}
 	previous_roi_no  = previous_roi_no + 1;
 	if previous_roi_no < 1

@@ -1,8 +1,8 @@
 function CaSignal = redraw_fcn(handles, CaSignal)
 	x = CaSignal.TempXY(1);
 	y = CaSignal.TempXY(2);
-	if numel(CaSignal.TempROI) ~= 0 ...
-		&& (x >= CaSignal.TempROI{3} && x <= CaSignal.TempROI{4} && y >= CaSignal.TempROI{1} && y <= CaSignal.TempROI{2})
+	if numel(CaSignal.TempROI) ~= 0 && CaSignal.RedrawBasedOnTempROI
+% 		&& (x >= CaSignal.TempROI{3} && x <= CaSignal.TempROI{4} && y >= CaSignal.TempROI{1} && y <= CaSignal.TempROI{2})
 		CaSignal.TempROI{8} = 'F';
 		CaSignal = update_subimage_show(handles, CaSignal, true);
 % 		roi_idx = CaSignal.TempROI{7};
