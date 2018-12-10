@@ -25,7 +25,7 @@ function [img_patch_boxes_survived, img_patch_scores_survived, roi_masks_survive
 	roi_masks_fullsize = roi_masks_fullsize(:, :, idx);
 	mask_boxes = mask_boxes(idx, :);
 	
-	remain_idx = non_maximum_suppression(mask_boxes, img_patch_scores, 0.2);
+	remain_idx = non_maximum_suppression(mask_boxes, img_patch_scores, 0.1);
 	
 	img_patch_boxes_survived = img_patch_boxes(remain_idx, :);
 	img_patch_scores_survived = img_patch_scores(remain_idx, :);

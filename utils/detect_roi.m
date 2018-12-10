@@ -30,7 +30,7 @@ function CaSignal = detect_roi(CaSignal)
 	roi_mask = uint8(roi_mask) - 1;
 	roi_mask = imresize(roi_mask, [bin_size, bin_size], 'Method', 'nearest');
 	roi_mask = imbinarize(roi_mask);
-	
+% 	remove redundant rois base on some rules
 	[roi_patch_boxes_remain, roi_patch_scores_remain, roi_masks_remain] = ...
 		remove_redundant_roi(roi_boxes, roi_probs, roi_mask,...
 		size(CaSignal.imageData, 1), size(CaSignal.imageData, 2));
@@ -39,12 +39,19 @@ function CaSignal = detect_roi(CaSignal)
 	for i = 1:size(roi_masks_remain, 3)
 		B = bwboundaries(roi_masks_remain(:, :, i), 'noholes');
 		if numel(B) >= 1
-			ROI_num = ROI_num + 1;
 			boundary = B{1};
-			CaSignal.ROIs{i} = ...
-				{roi_patch_boxes_remain(i, 1), roi_patch_boxes_remain(i, 1)+roi_patch_boxes_remain(i, 3)-1,...
-				roi_patch_boxes_remain(i, 2), roi_patch_boxes_remain(i, 2)+roi_patch_boxes_remain(i, 4)-1,...
-				uint8(roi_masks_remain(:, :, i)), boundary, i, 'T'};
+			centre_y = mean(boundary(:, 1));
+			centre_x = mean(boundary(:, 2));
+			distance_y = boundary(:, 1) - centre_y;
+			distance_x = boundary(:, 2) - centre_x;
+			distance = sqrt(distance_y.^2 + distance_x.^2);
+			if min(distance) > CaSignal.ROIDiameter*(1/4) && max(distance) < CaSignal.ROIDiameter*(3/3)
+				ROI_num = ROI_num + 1;
+				CaSignal.ROIs{ROI_num} = ...
+					{roi_patch_boxes_remain(i, 1), roi_patch_boxes_remain(i, 1)+roi_patch_boxes_remain(i, 3)-1,...
+					roi_patch_boxes_remain(i, 2), roi_patch_boxes_remain(i, 2)+roi_patch_boxes_remain(i, 4)-1,...
+					uint8(roi_masks_remain(:, :, i)), boundary, ROI_num, 'T'};
+			end
 		end
 	end
 	CaSignal.ROI_num = ROI_num;

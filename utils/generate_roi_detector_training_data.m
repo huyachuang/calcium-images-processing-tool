@@ -15,7 +15,8 @@ function training_data_path = generate_roi_detector_training_data(src_dir, dst_d
 	%%config some parameters
 	pos_count = 0;
 	neg_count = 0;
-	overlap_th = 0.75;
+	overlap_th_pos = 0.7;
+	overlap_th_neg = 0.5;
 	%go through src+_dirs for original imgs and labels
 	for i = 1:numel(src_dir)
 		%load image
@@ -49,13 +50,13 @@ function training_data_path = generate_roi_detector_training_data(src_dir, dst_d
 		img_patches_boxes = reshape(img_patches_boxes, size(img_patches_boxes, 1)*size(img_patches_boxes, 2), 4);
 		overlapRatio = bboxOverlapRatio(img_patches_boxes, ROI_boxes, 'Min');
 		for j = 1:size(overlapRatio, 1)
-			if max(overlapRatio(j, :)) > overlap_th
+			if max(overlapRatio(j, :)) > overlap_th_pos
 				pos_count = pos_count + 1;
 				filenames = [num2str(pos_count) '.jpg'];
 				imwrite(img(img_patches_boxes(j, 1):img_patches_boxes(j, 1)+img_patches_boxes(j, 3)-1,...
 					img_patches_boxes(j, 2):img_patches_boxes(j, 2)+img_patches_boxes(j, 4)-1, :),...
 					fullfile(cell_dir, filenames))
-			else
+			elseif max(overlapRatio(j, :)) < overlap_th_neg
 				neg_count = neg_count + 1;
 				filenames = [num2str(neg_count) '.jpg'];
 				imwrite(img(img_patches_boxes(j, 1):img_patches_boxes(j, 1)+img_patches_boxes(j, 3)-1,...
@@ -64,5 +65,6 @@ function training_data_path = generate_roi_detector_training_data(src_dir, dst_d
 			end
 		end
 	end
+	sprintf('pos: %d   neg: %d', pos_count, neg_count);
 	training_data_path = dst_dir;
 end

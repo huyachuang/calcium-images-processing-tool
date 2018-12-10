@@ -353,29 +353,49 @@ set(handles.TrialNumEdit, 'String', sprintf('%d/%d', CaSignal.current_trial, CaS
 % --------------------------------------------------------------------
 function SaveROIInfoTool_ClickedCallback(hObject, eventdata, handles)
 global CaSignal
-ROIInfo = {};
+% ROIInfo = {};
 ROImask = {};
 n = 0;
 for i = 1:CaSignal.ROI_num 
 	if CaSignal.ROIs{i}{8} == 'T'
 		n = n+1;
-		ROIInfo{n} =  CaSignal.ROIs{i};
-		ROIInfo{n}{7} = n;
+% 		ROIInfo{n} =  CaSignal.ROIs{i};
+% 		ROIInfo{n}{7} = n;
 		tempMask = zeros(size(CaSignal.imageData, 1), size(CaSignal.imageData, 2));
-		y_start = ROIInfo{n}{1};
-		y_end = ROIInfo{n}{2};
-		x_start = ROIInfo{n}{3};
-		x_end = ROIInfo{n}{4};
-		tempRoi = ROIInfo{n}{5};
+		y_start = CaSignal.ROIs{i}{1};
+		y_end = CaSignal.ROIs{i}{2};
+		x_start = CaSignal.ROIs{i}{3};
+		x_end = CaSignal.ROIs{i}{4};
+		tempRoi = CaSignal.ROIs{i}{5};
 		tempMask(y_start:y_end, x_start:x_end) = tempRoi(1:y_end - y_start + 1, 1:x_end - x_start + 1);
 		ROImask{n} = tempMask;
 	end
 end
-if exist(fullfile(CaSignal.imagePathName, 'ROIInfo'), 'dir') == 0
-	mkdir(fullfile(CaSignal.imagePathName, 'ROIInfo'));
+
+[file, path] = uiputfile('*.mat', 'Save ROI masks');
+if isequal(file,0) || isequal(path,0)
+	answer = questdlg('Sure you do NOT want save ROI masks ?', 'Alert query');
+	switch answer
+		case 'Yes'
+			return;
+		case 'No'
+			[file, path] = uiputfile('*.mat', 'Save trained model file');
+			if isequal(file,0) || isequal(path,0)
+				return
+			end
+		case 'Cancel'
+			[file, path] = uiputfile('*.mat', 'Save trained model file');
+			if isequal(file,0) || isequal(path,0)
+				return
+			end
+	end
 end
+% if exist(fullfile(CaSignal.imagePathName, 'ROIInfo'), 'dir') == 0
+% 	mkdir(fullfile(CaSignal.imagePathName, 'ROIInfo'));
+% end
 disp('Save ROI info');
-save(fullfile(CaSignal.imagePathName, 'ROIInfo', 'ROIInfo.mat'), 'ROIInfo', 'ROImask');
+% save(fullfile(CaSignal.imagePathName, 'ROIInfo', 'ROIInfo.mat'), 'ROImask');
+save(fullfile(path, file), 'ROImask');
 
 
 % --------------------------------------------------------------------
@@ -526,6 +546,7 @@ answer = questdlg('Do you want to delete all ROI information ?', 'Alert query');
 switch answer
     case 'Yes'
 		CaSignal = delete_all_roi(CaSignal);
+		set(handles.CurrentROINoEdit, 'String', '0');
 		CaSignal = Update_Image_Fcn(handles, CaSignal, true);
 		CaSignal = update_subimage_show(handles, CaSignal, true);
     case 'No'
@@ -549,15 +570,17 @@ function CurrentROINoEdit_Callback(hObject, eventdata, handles)
 global CaSignal
 current_roi_no = str2double(get(hObject,'String'));
 current_roi_no = floor(current_roi_no);
-if current_roi_no > CaSignal.ROI_num
-	current_roi_no = CaSignal.ROI_num;
-elseif current_roi_no < 1
-	current_roi_no = 1;
+if numel(CaSignal.ROIs) > 0
+	if current_roi_no > CaSignal.ROI_num
+		current_roi_no = CaSignal.ROI_num;
+	elseif current_roi_no < 1
+		current_roi_no = 1;
+	end
+	CaSignal.TempROI = CaSignal.ROIs{current_roi_no};
+	CaSignal.RedrawBasedOnTempROI = true;
+	CaSignal = update_subimage_show(handles, CaSignal, true);
+	CaSignal = Update_Image_Fcn(handles, CaSignal, true);
 end
-CaSignal.TempROI = CaSignal.ROIs{current_roi_no};
-CaSignal.RedrawBasedOnTempROI = true;
-CaSignal = update_subimage_show(handles, CaSignal, true);
-CaSignal = Update_Image_Fcn(handles, CaSignal, true);
 
 
 % --- Executes during object creation, after setting all properties.
@@ -610,6 +633,7 @@ disp('Detecting ROIs')
 set(handles.figure1, 'pointer', 'watch')
 drawnow;
 CaSignal = detect_roi(CaSignal);
+set(handles.ROINumShowText, 'String', num2str(CaSignal.ROI_T_num));
 CaSignal = generate_summarizedMask(CaSignal);
 CaSignal = update_subimage_show(handles, CaSignal, true);
 CaSignal = Update_Image_Fcn(handles, CaSignal, true);
@@ -675,6 +699,7 @@ CaSignal = Update_Image_Fcn(handles, CaSignal, true);
 % --- Executes on button press in SetROIDIAButton.
 function SetROIDIAButton_Callback(hObject, eventdata, handles)
 global CaSignal
+
 prompt = {'Enter ROI Diameter:'};
 title = 'Set ROI Diameter';
 dims = [1 35];

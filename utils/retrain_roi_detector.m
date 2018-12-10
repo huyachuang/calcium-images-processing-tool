@@ -1,5 +1,6 @@
 function CaSignal = retrain_roi_detector(CaSignal, datapath)
 	%set parameter
+	B_R_ratio = 3;
 	title = 'Set Training Parameter';
 	prompt = {'InitialLearnRate:', 'MaxEpochs:', 'MiniBatchSize:', 'ValidationFrequency'};
 	definput = {num2str(3e-4), num2str(10), num2str(16), num2str(10)};
@@ -23,13 +24,13 @@ function CaSignal = retrain_roi_detector(CaSignal, datapath)
 	tb1= countEachLabel(imds);
 	background_num = tb1.Count(1);
 	cell_num = tb1.Count(2);
-	if background_num > 2*cell_num
-		del_num = background_num - 2*cell_num;
-	end
-	background_filenames = dir(fullfile(train_dir, 'background\*.jpg'));
-	del_filenames = randsample(background_filenames, del_num);
-	for i = 1:del_num
-		delete(fullfile(train_dir, 'background', del_filenames(i).name))
+	if background_num > B_R_ratio*cell_num
+		del_num = background_num - B_R_ratio*cell_num;
+		background_filenames = dir(fullfile(train_dir, 'background\*.jpg'));
+		del_filenames = randsample(background_filenames, del_num);
+		for i = 1:del_num
+			delete(fullfile(train_dir, 'background', del_filenames(i).name))
+		end
 	end
 	imds = imageDatastore(fullfile(train_dir, categories), 'LabelSource', 'foldernames');
 	[trainingSet, valSet] = splitEachLabel(imds, 0.9, 'randomize');
