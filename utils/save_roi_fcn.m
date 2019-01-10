@@ -3,7 +3,7 @@ function CaSignal = save_roi_fcn(CaSignal, handles)
 		CaSignal.ROI_num = CaSignal.ROI_num + 1;
 		CaSignal.ROI_T_num = CaSignal.ROI_T_num + 1;
 		CaSignal.ROIs{CaSignal.ROI_num} = CaSignal.TempROI;
-		tempMask = zeros(size(CaSignal.imageData, 1), size(CaSignal.imageData, 2));
+		tempMask = zeros(CaSignal.image_height, CaSignal.image_width);
 		y_start = CaSignal.TempROI{1};
 		y_end = CaSignal.TempROI{2};
 		x_start = CaSignal.TempROI{3};
@@ -21,7 +21,7 @@ function CaSignal = save_roi_fcn(CaSignal, handles)
 		x_end = CaSignal.TempROI{4};
 		tempRoi = CaSignal.TempROI{5};
 		CaSignal.SummarizedMask(CaSignal.SummarizedMask == CaSignal.TempROI{7}) = 0;
-		tempMask = zeros(size(CaSignal.imageData, 1), size(CaSignal.imageData, 2));
+		tempMask = zeros(CaSignal.image_height, CaSignal.image_width);
 		tempMask(y_start:y_end, x_start:x_end) = tempRoi(1:y_end - y_start + 1, 1:x_end - x_start + 1);
 		idx = find(tempMask);
 		CaSignal.SummarizedMask(idx) = CaSignal.TempROI{7};

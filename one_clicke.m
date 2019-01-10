@@ -22,7 +22,7 @@ function varargout = one_clicke(varargin)
 
 % Edit the above text to modify the response to help one_clicke
 
-% Last Modified by GUIDE v2.5 23-Nov-2018 11:04:10
+% Last Modified by GUIDE v2.5 11-Dec-2018 15:31:06
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -71,6 +71,8 @@ CaSignal.ROIDiameter = 12;
 % about showing image
 CaSignal.imagePathName = pwd;
 CaSignal.showing_image = [];
+CaSignal.image_width = 0;
+CaSignal.image_height = 0;
 CaSignal.imageFilename = '';
 CaSignal.imagePathName = '';
 CaSignal.mean_images = [];
@@ -86,7 +88,7 @@ CaSignal.TempXY = [64, 64];
 CaSignal.RedrawBasedOnTempROI = true;
 CaSignal.SummarizedMask = [];
 %about machine learning
-CaSignal.imageData = [];
+% CaSignal.imageData = [];
 
 CaSignal.localFCNModelFilename = '';
 CaSignal.localFCNModelPathName = '';
@@ -94,10 +96,14 @@ CaSignal.localFCNModel = [];
 CaSignal.ROIDetectorFilename = '';
 CaSignal.ROIDetectorPathName = '';
 CaSignal.ROIDetector = [];
+CaSignal.FasterRCNNDetector = [];
+CaSignal.FasterRCNNDetectorPathName = '';
+CaSignal.FasterRCNNDetectorFilename = '';
 
 set(handles.ModelPathEdit, 'String', pwd);
 set(handles.ROIDetectorPathEdit, 'String', pwd);
 cd(fileparts(which(mfilename)));
+addpath('./');
 addpath('./utils');
 % Update handles structure
 guidata(hObject, handles);
@@ -146,6 +152,7 @@ set(handles.DrawROICheckbox, 'Enable', 'on');
 set(handles.RegisterROIButton, 'Enable', 'on');
 set(handles.LocalFCNRetrainButton, 'Enable', 'on');
 set(handles.ChooseROIDetectorButton, 'Enable', 'on');
+set(handles.FasterRCNNModelChooseButton, 'Enable', 'on');
 
 
 
@@ -361,7 +368,7 @@ for i = 1:CaSignal.ROI_num
 		n = n+1;
 % 		ROIInfo{n} =  CaSignal.ROIs{i};
 % 		ROIInfo{n}{7} = n;
-		tempMask = zeros(size(CaSignal.imageData, 1), size(CaSignal.imageData, 2));
+		tempMask = zeros(CaSignal.image_height, CaSignal.image_width);
 		y_start = CaSignal.ROIs{i}{1};
 		y_end = CaSignal.ROIs{i}{2};
 		x_start = CaSignal.ROIs{i}{3};
@@ -372,30 +379,30 @@ for i = 1:CaSignal.ROI_num
 	end
 end
 
-[file, path] = uiputfile('*.mat', 'Save ROI masks');
-if isequal(file,0) || isequal(path,0)
-	answer = questdlg('Sure you do NOT want save ROI masks ?', 'Alert query');
-	switch answer
-		case 'Yes'
-			return;
-		case 'No'
-			[file, path] = uiputfile('*.mat', 'Save trained model file');
-			if isequal(file,0) || isequal(path,0)
-				return
-			end
-		case 'Cancel'
-			[file, path] = uiputfile('*.mat', 'Save trained model file');
-			if isequal(file,0) || isequal(path,0)
-				return
-			end
-	end
-end
-% if exist(fullfile(CaSignal.imagePathName, 'ROIInfo'), 'dir') == 0
-% 	mkdir(fullfile(CaSignal.imagePathName, 'ROIInfo'));
+% [file, path] = uiputfile('*.mat', 'Save ROI masks');
+% if isequal(file,0) || isequal(path,0)
+% 	answer = questdlg('Sure you do NOT want save ROI masks ?', 'Alert query');
+% 	switch answer
+% 		case 'Yes'
+% 			return;
+% 		case 'No'
+% 			[file, path] = uiputfile('*.mat', 'Save trained model file');
+% 			if isequal(file,0) || isequal(path,0)
+% 				return
+% 			end
+% 		case 'Cancel'
+% 			[file, path] = uiputfile('*.mat', 'Save trained model file');
+% 			if isequal(file,0) || isequal(path,0)
+% 				return
+% 			end
+% 	end
 % end
+if exist(fullfile(CaSignal.imagePathName, 'ROIInfo'), 'dir') == 0
+	mkdir(fullfile(CaSignal.imagePathName, 'ROIInfo'));
+end
 disp('Save ROI info');
-% save(fullfile(CaSignal.imagePathName, 'ROIInfo', 'ROIInfo.mat'), 'ROImask');
-save(fullfile(path, file), 'ROImask');
+save(fullfile(CaSignal.imagePathName, 'ROIInfo', 'ROIInfo.mat'), 'ROImask');
+% save(fullfile(path, file), 'ROImask');
 
 
 % --------------------------------------------------------------------
@@ -411,14 +418,20 @@ disp('Loading Image Data')
 [CaSignal.mean_images, CaSignal.max_images] = load_image_data(CaSignal.imagePathName);
 disp('Done')
 CaSignal.max_mean_image = max(CaSignal.mean_images, [], 3);
-CaSignal.imageData = gray2RGB(CaSignal.max_mean_image);
+CaSignal.image_height = size(CaSignal.max_mean_image, 1);
+CaSignal.image_width = size(CaSignal.max_mean_image, 2);
+% CaSignal.imageData = gray2RGB(CaSignal.max_mean_image);
 CaSignal.current_trial = 1;
 CaSignal.total_trial = size(CaSignal.mean_images, 3);
 set(handles.TrialNumEdit, 'String', sprintf('%d/%d', CaSignal.current_trial, CaSignal.total_trial));
-CaSignal.showing_image = CaSignal.mean_images(:, :, CaSignal.current_trial);
-CaSignal.SummarizedMask = zeros(size(CaSignal.imageData, 1), size(CaSignal.imageData, 2));
-CaSignal.top_percentile = 100.0;
-CaSignal.bottom_percentile = 0.0;
+CaSignal.SummarizedMask = zeros(CaSignal.image_height, CaSignal.image_width);
+if get(handles.MeanBox, 'Value') == 1
+	CaSignal.showing_image = CaSignal.mean_images(:, :, CaSignal.current_trial);
+elseif get(handles.MaxMeanBox, 'Value') == 1
+	CaSignal.showing_image = CaSignal.max_mean_image;
+elseif get(handles.MaxBox, 'Value') == 1
+	CaSignal.showing_image = CaSignal.max_images(:, :, CaSignal.current_trial);
+end
 CaSignal = Update_Image_Fcn(handles, CaSignal, false);
 set(handles.LoadROIButton, 'Enable', 'on');
 set(handles.ModelChooseButton, 'Enable', 'on');
@@ -450,6 +463,7 @@ if CaSignal.ROI_num > 0
 	CaSignal = update_subimage_show(handles, CaSignal, true);
 end
 set(handles.ROINumShowText, 'String', num2str(CaSignal.ROI_T_num));
+set(handles.CurrentROINoEdit, 'String', '1');
 CaSignal = generate_summarizedMask(CaSignal);
 CaSignal = Update_Image_Fcn(handles, CaSignal, true);
 set(handles.figure1, 'pointer', 'arrow');
@@ -547,6 +561,7 @@ switch answer
     case 'Yes'
 		CaSignal = delete_all_roi(CaSignal);
 		set(handles.CurrentROINoEdit, 'String', '0');
+		set(handles.CurrentROINoEdit, 'String', '0');
 		CaSignal = Update_Image_Fcn(handles, CaSignal, true);
 		CaSignal = update_subimage_show(handles, CaSignal, true);
     case 'No'
@@ -634,6 +649,9 @@ set(handles.figure1, 'pointer', 'watch')
 drawnow;
 CaSignal = detect_roi(CaSignal);
 set(handles.ROINumShowText, 'String', num2str(CaSignal.ROI_T_num));
+if CaSignal.ROI_T_num > 0
+	set(handles.CurrentROINoEdit, 'String', '1');
+end
 CaSignal = generate_summarizedMask(CaSignal);
 CaSignal = update_subimage_show(handles, CaSignal, true);
 CaSignal = Update_Image_Fcn(handles, CaSignal, true);
@@ -707,3 +725,75 @@ definput = {num2str(CaSignal.ROIDiameter)};
 answer = inputdlg(prompt,title,dims,definput);
 CaSignal.ROIDiameter = str2double(answer{1});
 set(handles.ROIDiameterShowText, 'String', answer{1});
+
+
+
+function FasterRCNNModelPathEdit_Callback(hObject, eventdata, handles)
+% hObject    handle to FasterRCNNModelPathEdit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of FasterRCNNModelPathEdit as text
+%        str2double(get(hObject,'String')) returns contents of FasterRCNNModelPathEdit as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function FasterRCNNModelPathEdit_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to FasterRCNNModelPathEdit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in FasterRCNNModelChooseButton.
+function FasterRCNNModelChooseButton_Callback(hObject, eventdata, handles)
+global CaSignal
+dataPath = get(handles.ROIDetectorPathEdit,'String');
+[filename, pathName] = uigetfile(fullfile(dataPath, '*.mat'), 'Load Faster RCNN model');
+if isequal(filename,0)
+	return;
+end
+set(handles.FasterRCNNModelPathEdit,'String', fullfile(pathName, filename));
+disp('Loading ROI Detector');
+CaSignal.FasterRCNNDetector = load(fullfile(pathName, filename));
+CaSignal.FasterRCNNDetector = CaSignal.FasterRCNNDetector.detector;
+disp('Done')
+CaSignal.FasterRCNNDetectorPathName = pathName;
+CaSignal.FasterRCNNDetectorFilename = filename;
+set(handles.FasterRCNNDetectButton,'Enable', 'on');
+set(handles.FasterRCNNRetrainButton,'Enable', 'on');
+
+
+% --- Executes on button press in FasterRCNNDetectButton.
+function FasterRCNNDetectButton_Callback(hObject, eventdata, handles)
+global CaSignal
+disp('Detecting ROIs')
+set(handles.figure1, 'pointer', 'watch')
+drawnow;
+CaSignal = faster_rcnn_detect(CaSignal);
+set(handles.ROINumShowText, 'String', num2str(CaSignal.ROI_T_num));
+if CaSignal.ROI_T_num > 0
+	set(handles.CurrentROINoEdit, 'String', '1');
+end
+CaSignal = generate_summarizedMask(CaSignal);
+CaSignal = update_subimage_show(handles, CaSignal, true);
+CaSignal = Update_Image_Fcn(handles, CaSignal, true);
+disp('Done')
+set(handles.figure1, 'pointer', 'arrow')
+
+
+% --- Executes on button press in FasterRCNNRetrainButton.
+function FasterRCNNRetrainButton_Callback(hObject, eventdata, handles)
+global CaSignal
+datapath = uigetfile_n_dir(CaSignal.imagePathName, 'Chose folders used to train');
+if numel(datapath) ~= 0
+	CaSignal = retrain_faster_rcnn_detector(CaSignal, datapath);
+	set(handles.FasterRCNNModelPathEdit,'String', ...
+		fullfile(CaSignal.FasterRCNNDetectorPathName, CaSignal.FasterRCNNDetectorFilename));
+end
+

@@ -1,9 +1,9 @@
 function CaSignal = generate_summarizedMask(CaSignal)
 	ROIs = CaSignal.ROIs;
 % 	assignin('base','ROIs',ROIs)
-	CaSignal.SummarizedMask = zeros(size(CaSignal.imageData, 1), size(CaSignal.imageData, 2));
+	CaSignal.SummarizedMask = zeros(CaSignal.image_height, CaSignal.image_width);
 	for i = 1:CaSignal.ROI_num
-		tempMask = zeros(size(CaSignal.imageData, 1), size(CaSignal.imageData, 2));
+		tempMask =  zeros(CaSignal.image_height, CaSignal.image_width);
 		y_start = CaSignal.ROIs{i}{1};
 		y_end = CaSignal.ROIs{i}{2};
 		x_start = CaSignal.ROIs{i}{3};

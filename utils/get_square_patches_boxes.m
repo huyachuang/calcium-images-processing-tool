@@ -4,7 +4,7 @@ function img_patches_boxes = get_square_patches_boxes(img, bin_size, step_size)
 	img_w = size(img, 2);
 	h_n  = int16((floor(img_h - bin_size + step_size) / step_size));
 	w_n  = int16((floor(img_w - bin_size + step_size) / step_size));
-	img_patches_boxes = int16(zeros(h_n, w_n, 4));
+	img_patches_boxes = double(zeros(h_n, w_n, 4));
 	for i = 1:h_n
 		if i == h_n
 			start_h = img_h - bin_size + 1;

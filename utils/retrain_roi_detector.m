@@ -1,20 +1,25 @@
 function CaSignal = retrain_roi_detector(CaSignal, datapath)
 	%set parameter
-	B_R_ratio = 3;
+	B_R_ratio = 2;
 	title = 'Set Training Parameter';
+	InitialLearnRate = 3e-4;
+	MaxEpochs = 10;
+	MiniBatchSize = 16;
+	ValidationFrequency = 10;
 	prompt = {'InitialLearnRate:', 'MaxEpochs:', 'MiniBatchSize:', 'ValidationFrequency'};
-	definput = {num2str(3e-4), num2str(10), num2str(16), num2str(10)};
+	definput = {num2str(InitialLearnRate), num2str(MaxEpochs), num2str(MiniBatchSize), num2str(ValidationFrequency)};
 	dims = [1 100];
 	answer = inputdlg(prompt, title, dims, definput);
 	InitialLearnRate = str2double(answer{1});
 	MaxEpochs = str2double(answer{2});
 	MiniBatchSize = str2double(answer{3});
 	ValidationFrequency = str2double(answer{4});
+	
 	%prepare training data
 	train_dir = fullfile(CaSignal.ROIDetectorPathName, 'roi_detector_temp_training_dataset');
 	disp('Generating training data');
 	bin_size = CaSignal.ROIDiameter*2+1;
-	step_size = floor(CaSignal.ROIDiameter/2);
+	step_size = floor(CaSignal.ROIDiameter/3);
 	train_dir = generate_roi_detector_training_data(datapath, train_dir, bin_size, step_size);
 	disp('Done');
 	%load and organize traning data
@@ -31,6 +36,13 @@ function CaSignal = retrain_roi_detector(CaSignal, datapath)
 		for i = 1:del_num
 			delete(fullfile(train_dir, 'background', del_filenames(i).name))
 		end
+	elseif cell_num > B_R_ratio*background_num
+		del_num = cell_num - B_R_ratio*background_num;
+		cell_filenames = dir(fullfile(train_dir, 'cell\*.jpg'));
+		del_filenames = randsample(cell_filenames, del_num);
+		for i = 1:del_num
+			delete(fullfile(train_dir, 'background', del_filenames(i).name))
+		end	
 	end
 	imds = imageDatastore(fullfile(train_dir, categories), 'LabelSource', 'foldernames');
 	[trainingSet, valSet] = splitEachLabel(imds, 0.9, 'randomize');
@@ -47,6 +59,10 @@ function CaSignal = retrain_roi_detector(CaSignal, datapath)
 		'DataAugmentation',imageAugmenter);
 	augimdsValidation = augmentedImageDatastore(inputSize(1:2),valSet);
 	% start training
+	checkpoint_path = fullfile(CaSignal.ROIDetectorPathName, 'logs/roi_detector');
+	if ~exist(checkpoint_path, 'dir')
+		mkdir(checkpoint_path)
+	end
 	options = trainingOptions('sgdm', ...
 		'MiniBatchSize',MiniBatchSize, ...
 		'MaxEpochs',MaxEpochs, ...
@@ -54,7 +70,8 @@ function CaSignal = retrain_roi_detector(CaSignal, datapath)
 		'Shuffle','every-epoch', ...
 		'ValidationData',augimdsValidation, ...
 		'ValidationFrequency',ValidationFrequency, ...
-		'Verbose',false, ...
+		'CheckpointPath', checkpoint_path, ...
+		'Verbose',true, ...
 		'Plots','training-progress');
 	net = trainNetwork(augimdsTrain,lgraph,options);
 	%save train model

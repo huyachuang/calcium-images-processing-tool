@@ -8,8 +8,10 @@ function CaSignal = update_subimage_show(handles, CaSignal, with_TempROI)
 		y_end = CaSignal.TempROI{2};
 		x_start = CaSignal.TempROI{3};
 		x_end = CaSignal.TempROI{4};
-		img = zeros(2 * CaSignal.ROIDiameter + 1,  2 * CaSignal.ROIDiameter + 1);
-		img(1:y_end - y_start + 1, 1:x_end - x_start + 1,:) = CaSignal.showing_image(y_start:y_end, x_start:x_end);
+% 		img = zeros(2 * CaSignal.ROIDiameter + 1,  2 * CaSignal.ROIDiameter + 1);
+% 		disp([y_start, y_end, x_start, x_end])
+% 		img(1:y_end - y_start + 1, 1:x_end - x_start + 1,:) = CaSignal.showing_image(y_start:y_end, x_start:x_end);
+		img = CaSignal.showing_image(y_start:y_end, x_start:x_end);
 		p_bottom = prctile(img,CaSignal.bottom_percentile, 'all');
 		p_top = prctile(img,CaSignal.top_percentile, 'all');
 		if p_bottom >= p_top

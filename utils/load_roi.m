@@ -19,6 +19,7 @@ function ROIs = load_roi(filename, CaSignal)
 		tempROI{6} = B{1};
 		tempROI{7} = i;
 		tempROI{8} = 'T';
+		tempROI{9} = 1;
 		ROIs{i} = tempROI;
 	end
 	

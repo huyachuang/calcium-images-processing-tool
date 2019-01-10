@@ -2,29 +2,36 @@ function CaSignal = retrain_localFCN(CaSignal, datapath)
 
 	lgraph = layerGraph(CaSignal.localFCNModel.net);
 	initial_inputSize = lgraph.Layers(1).InputSize;
-	
 	% set training parameter
 	title = 'Set Training Parameter';
-	prompt = {'InputSize:', 'InitialLearnRate:', 'MaxEpochs:', 'MiniBatchSize:'};
-	definput = {mat2str(initial_inputSize),num2str(1e-3), num2str(10), num2str(8), };
+	inputSize = initial_inputSize;
+	InitialLearnRate = 1e-3;
+	MaxEpochs = 10;
+	MiniBatchSize = 16;
+	RandomSampleNum = 10;
+	prompt = {'InputSize:', 'InitialLearnRate:', 'MaxEpochs:', 'MiniBatchSize:', 'RandomSampleNum:'};
+	definput = {mat2str(inputSize),num2str(InitialLearnRate), num2str(MaxEpochs), num2str(MiniBatchSize), num2str(RandomSampleNum)};
 	dims = [1 100];
 	answer = inputdlg(prompt,title,dims,definput);
-	inputSize = str2num(answer{1});
-	disp(class(inputSize))
-	InitialLearnRate = str2double(answer{2});
-	MaxEpochs = str2double(answer{3});
-	MiniBatchSize = str2double(answer{4});
+	if numel(answer) > 0
+		inputSize = str2num(answer{1});
+		InitialLearnRate = str2double(answer{2});
+		MaxEpochs = str2double(answer{3});
+		MiniBatchSize = str2double(answer{4});
+		RandomSampleNum = str2double(answer{4});
+	end
 	if ~isequal(inputSize, initial_inputSize)
 		new_inputlayer = imageInputLayer([inputSize(1), inputSize(2), inputSize(3)],...
 			'Name', 'inputImage');
-		lgraph = removeLayers(lgraph, 'inputImage');
-		lgraph = addLayers(lgraph, new_inputlayer);
-		lgraph = connectLayers(lgraph,'inputImage','conv1_1');
+		lgraph = replaceLayer(lgraph, 'inputImage', new_inputlayer);
+% 		lgraph = removeLayers(lgraph, 'inputImage');
+% 		lgraph = addLayers(lgraph, new_inputlayer);
+% 		lgraph = connectLayers(lgraph,'inputImage','conv1_1');
 	end
 	%generate image patch used to train
 	train_dir = fullfile(CaSignal.localFCNModelPathName, 'local_fcn_temp_training_dataset');
 	disp('generating training data');
-	train_dir = generate_localFCN_training_data(datapath, train_dir, CaSignal.ROIDiameter, 10);
+	train_dir = generate_localFCN_training_data(datapath, train_dir, CaSignal.ROIDiameter, RandomSampleNum);
 	if isequal(train_dir, '')
 		return
 	end
@@ -36,7 +43,7 @@ function CaSignal = retrain_localFCN(CaSignal, datapath)
 		'DataAugmentation',augmenter, 'OutputSize', inputSize);
 	
 	% config and train
-	checkpoint_path = fullfile(CaSignal.localFCNModelPathName, 'logs');
+	checkpoint_path = fullfile(CaSignal.localFCNModelPathName, 'logs/fcn');
 	if ~exist(checkpoint_path, 'dir')
 		mkdir(checkpoint_path)
 	end
