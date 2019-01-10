@@ -12,8 +12,8 @@ function CaSignal = update_subimage_show(handles, CaSignal, with_TempROI)
 % 		disp([y_start, y_end, x_start, x_end])
 % 		img(1:y_end - y_start + 1, 1:x_end - x_start + 1,:) = CaSignal.showing_image(y_start:y_end, x_start:x_end);
 		img = CaSignal.showing_image(y_start:y_end, x_start:x_end);
-		p_bottom = prctile(img,CaSignal.bottom_percentile, 'all');
-		p_top = prctile(img,CaSignal.top_percentile, 'all');
+		p_bottom = prctile(CaSignal.showing_image,CaSignal.bottom_percentile, 'all');
+		p_top = prctile(CaSignal.showing_image,CaSignal.top_percentile, 'all');
 		if p_bottom >= p_top
 			temp = p_bottom;
 			p_bottom = p_top;

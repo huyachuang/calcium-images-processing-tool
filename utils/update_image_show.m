@@ -23,7 +23,7 @@ function CaSignal = update_image_show(handles, CaSignal, is_restore_zoom)
 			end
 			if ROI{8} == 'T'
 				boundary = ROI{6};
-				plot(boundary(:,2) + double(ROI{3}), boundary(:,1) + double(ROI{1}), linecolor, 'LineWidth', linewidth);
+				plot(boundary(:,2) + double(ROI{3}) - 1, boundary(:,1) + double(ROI{1}) - 1, linecolor, 'LineWidth', linewidth);
 			end
 		end
 	else
