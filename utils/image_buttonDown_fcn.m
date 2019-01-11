@@ -4,6 +4,7 @@ function CaSignal = Image_buttonDown_fcn(hObject,eventdata, handles, CaSignal)
 	y = uint16(eventdata.IntersectionPoint(2));
 	CaSignal.TempXY = [x, y];
 	if get(handles.DrawROICheckbox,'Value') == 1 && CaSignal.SummarizedMask(y, x) == 0
+		disp('pick ROI');
 		imageData = gray2RGB(CaSignal.showing_image);
 		% get image patch for segmentation
 		[x_start, x_end, y_start, y_end] = generate_loaction_boxes(CaSignal, x, y);
@@ -31,11 +32,13 @@ function CaSignal = Image_buttonDown_fcn(hObject,eventdata, handles, CaSignal)
 		end
 		CaSignal.RedrawBasedOnTempROI = true;
 	elseif ~isequal(CaSignal.SummarizedMask, []) && CaSignal.SummarizedMask(y, x) > 0
+		disp('select ROI');
 		CaSignal.TempROI = CaSignal.ROIs{CaSignal.SummarizedMask(y, x)};
 		set(handles.CurrentROINoEdit, 'String', num2str(CaSignal.TempROI{7}));
 		CaSignal = update_subimage_show(handles, CaSignal, true);
 		CaSignal.RedrawBasedOnTempROI = true;
 	else
+		disp('update sub_image');
 		CaSignal = update_subimage_show(handles, CaSignal, false);
 		CaSignal.RedrawBasedOnTempROI = false;
 	end

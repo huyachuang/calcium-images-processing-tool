@@ -22,7 +22,7 @@ function varargout = one_clicke(varargin)
 
 % Edit the above text to modify the response to help one_clicke
 
-% Last Modified by GUIDE v2.5 11-Dec-2018 15:31:06
+% Last Modified by GUIDE v2.5 11-Jan-2019 11:17:31
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -78,6 +78,7 @@ CaSignal.imagePathName = '';
 CaSignal.mean_images = [];
 CaSignal.max_images = [];
 CaSignal.max_mean_image = [];
+CaSignal.max_delta_images = [];
 CaSignal.showing_image = [];
 CaSignal.current_trial = 0;
 CaSignal.total_trial = 0;
@@ -214,10 +215,11 @@ if get(hObject,'Value') == 1
 	CaSignal.showing_image = CaSignal.max_mean_image;
 	set(handles.MeanBox,'Value', 0);
 	set(handles.MaxBox,'Value', 0);
-else
-	CaSignal.showing_image = CaSignal.mean_images(:, :, CaSignal.current_trial);
-	set(handles.MaxBox,'Value', 0);
-	set(handles.MaxMeanBox,'Value', 0);
+	set(handles.MaxDeltaBox, 'Value', 0);
+% else
+% 	CaSignal.showing_image = CaSignal.mean_images(:, :, CaSignal.current_trial);
+% 	set(handles.MaxBox,'Value', 0);
+% 	set(handles.MaxMeanBox,'Value', 0);
 end
 CaSignal = Update_Image_Fcn(handles, CaSignal, true);
 CaSignal = update_subimage_show(handles, CaSignal, true);
@@ -231,10 +233,11 @@ if get(hObject,'Value') == 1
 	CaSignal.showing_image = CaSignal.mean_images(:, :, CaSignal.current_trial);
 	set(handles.MaxMeanBox,'Value', 0);
 	set(handles.MaxBox,'Value', 0);
-else
-	CaSignal.showing_image = CaSignal.mean_images(:, :, CaSignal.current_trial);
-	set(handles.MaxBox,'Value', 0);
-	set(handles.MaxMeanBox,'Value', 0);
+	set(handles.MaxDeltaBox, 'Value', 0);
+% else
+% 	CaSignal.showing_image = CaSignal.mean_images(:, :, CaSignal.current_trial);
+% 	set(handles.MaxBox,'Value', 0);
+% 	set(handles.MaxMeanBox,'Value', 0);
 end
 CaSignal = Update_Image_Fcn(handles, CaSignal, true);
 CaSignal = update_subimage_show(handles, CaSignal, true);
@@ -247,14 +250,31 @@ if get(hObject,'Value') == 1
 	CaSignal.showing_image = CaSignal.max_images(:, :, CaSignal.current_trial);
 	set(handles.MaxMeanBox,'Value', 0);
 	set(handles.MeanBox,'Value', 0);
-else
-	CaSignal.showing_image = CaSignal.mean_images(:, :, CaSignal.current_trial);
-	set(handles.MaxBox,'Value', 0);
-	set(handles.MaxMeanBox,'Value', 0);
+	set(handles.MaxDeltaBox, 'Value', 0);
+% else
+% 	CaSignal.showing_image = CaSignal.mean_images(:, :, CaSignal.current_trial);
+% 	set(handles.MaxBox,'Value', 0);
+% 	set(handles.MaxMeanBox,'Value', 0);
 end
 CaSignal = Update_Image_Fcn(handles, CaSignal, true);
 CaSignal = update_subimage_show(handles, CaSignal, true);
 
+
+% --- Executes on button press in MaxDeltaBox.
+function MaxDeltaBox_Callback(hObject, eventdata, handles)
+global CaSignal
+if get(hObject,'Value') == 1
+	CaSignal.showing_image = CaSignal.max_delta_images(:, :, CaSignal.current_trial);
+	set(handles.MaxMeanBox,'Value', 0);
+	set(handles.MeanBox,'Value', 0);
+	set(handles.MaxBox,'Value', 0);
+% else
+% 	CaSignal.showing_image = CaSignal.mean_images(:, :, CaSignal.current_trial);
+% 	set(handles.MaxBox,'Value', 0);
+% 	set(handles.MaxMeanBox,'Value', 0);
+end
+CaSignal = Update_Image_Fcn(handles, CaSignal, true);
+CaSignal = update_subimage_show(handles, CaSignal, true);
 
 % --- Executes on slider movement.
 function slider1_Callback(hObject, eventdata, handles)
@@ -305,6 +325,8 @@ if get(handles.MaxBox,'Value') == 1
 	CaSignal.showing_image = CaSignal.max_images(:, :, CaSignal.current_trial);
 elseif get(handles.MeanBox,'Value') == 1
 	CaSignal.showing_image = CaSignal.mean_images(:, :, CaSignal.current_trial);
+elseif get(handles.MaxDeltaBox,'Value') == 1
+	CaSignal.showing_image = CaSignal.max_delta_images(:, :, CaSignal.current_trial);
 end
 CaSignal = Update_Image_Fcn(handles, CaSignal, true);
 CaSignal = update_subimage_show(handles, CaSignal, true);
@@ -322,6 +344,8 @@ if get(handles.MaxBox,'Value') == 1
 	CaSignal.showing_image = CaSignal.max_images(:, :, CaSignal.current_trial);
 elseif get(handles.MeanBox,'Value') == 1
 	CaSignal.showing_image = CaSignal.mean_images(:, :, CaSignal.current_trial);
+elseif get(handles.MaxDeltaBox,'Value') == 1
+	CaSignal.showing_image = CaSignal.max_delta_images(:, :, CaSignal.current_trial);
 end
 CaSignal = Update_Image_Fcn(handles, CaSignal, true);
 CaSignal = update_subimage_show(handles, CaSignal, true);
@@ -346,6 +370,8 @@ if CaSignal.current_trial > CaSignal.total_trial
 	CaSignal.current_trial = CaSignal.current_trial - CaSignal.total_trial;
 elseif CaSignal.current_trial < 1
 	CaSignal.current_trial = CaSignal.total_trial + CaSignal.current_trial;
+elseif get(handles.MaxDeltaBox,'Value') == 1
+	CaSignal.showing_image = CaSignal.max_delta_images(:, :, CaSignal.current_trial);
 end
 if get(handles.MaxBox,'Value') == 1
 	CaSignal.showing_image = CaSignal.max_images(:, :, CaSignal.current_trial);
@@ -415,15 +441,16 @@ end
 CaSignal.imageFilename = filename;
 CaSignal.imagePathName = pathName;
 disp('Loading Image Data')
-[CaSignal.mean_images, CaSignal.max_images] = load_image_data(CaSignal.imagePathName);
+[CaSignal.mean_images, CaSignal.max_images, CaSignal.max_delta_images] = load_image_data_v2(CaSignal.imagePathName);
 disp('Done')
-CaSignal.max_mean_image = max(CaSignal.mean_images, [], 3);
-CaSignal.image_height = size(CaSignal.max_mean_image, 1);
-CaSignal.image_width = size(CaSignal.max_mean_image, 2);
-% CaSignal.imageData = gray2RGB(CaSignal.max_mean_image);
 CaSignal.current_trial = 1;
 CaSignal.total_trial = size(CaSignal.mean_images, 3);
 set(handles.TrialNumEdit, 'String', sprintf('%d/%d', CaSignal.current_trial, CaSignal.total_trial));
+set(handles.MaxMeanIntervalEdit, 'String', sprintf('%d,%d', 1, CaSignal.total_trial));
+CaSignal.max_mean_image = max(CaSignal.mean_images, [], 3);
+CaSignal.image_height = size(CaSignal.max_mean_image, 1);
+CaSignal.image_width = size(CaSignal.max_mean_image, 2);
+
 CaSignal.SummarizedMask = zeros(CaSignal.image_height, CaSignal.image_width);
 if get(handles.MeanBox, 'Value') == 1
 	CaSignal.showing_image = CaSignal.mean_images(:, :, CaSignal.current_trial);
@@ -431,6 +458,8 @@ elseif get(handles.MaxMeanBox, 'Value') == 1
 	CaSignal.showing_image = CaSignal.max_mean_image;
 elseif get(handles.MaxBox, 'Value') == 1
 	CaSignal.showing_image = CaSignal.max_images(:, :, CaSignal.current_trial);
+elseif get(handles.MaxDeltaBox, 'Value') == 1
+	CaSignal.showing_image = CaSignal.max_delta_images;
 end
 CaSignal = Update_Image_Fcn(handles, CaSignal, false);
 set(handles.LoadROIButton, 'Enable', 'on');
@@ -797,3 +826,25 @@ if numel(datapath) ~= 0
 		fullfile(CaSignal.FasterRCNNDetectorPathName, CaSignal.FasterRCNNDetectorFilename));
 end
 
+
+
+
+
+function MaxMeanIntervalEdit_Callback(hObject, eventdata, handles)
+global CaSignal
+temp = strsplit(get(handles.MaxMeanIntervalEdit, 'String'), ',');
+max_mean_start = int16(str2double(temp{1}));
+max_mean_end = int16(str2double(temp{2}));
+if max_mean_end < max_mean_start
+	max_mean_end = max_mean_start;
+end
+CaSignal.max_mean_image = max(CaSignal.mean_images(:, :, max_mean_start:max_mean_end), [], 3);
+CaSignal.showing_image = CaSignal.max_mean_image;
+CaSignal = Update_Image_Fcn(handles, CaSignal, true);
+CaSignal = update_subimage_show(handles, CaSignal, true);
+
+% --- Executes during object creation, after setting all properties.
+function MaxMeanIntervalEdit_CreateFcn(hObject, eventdata, handles)
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end

@@ -24,9 +24,6 @@ function CaSignal = retrain_localFCN(CaSignal, datapath)
 		new_inputlayer = imageInputLayer([inputSize(1), inputSize(2), inputSize(3)],...
 			'Name', 'inputImage');
 		lgraph = replaceLayer(lgraph, 'inputImage', new_inputlayer);
-% 		lgraph = removeLayers(lgraph, 'inputImage');
-% 		lgraph = addLayers(lgraph, new_inputlayer);
-% 		lgraph = connectLayers(lgraph,'inputImage','conv1_1');
 	end
 	%generate image patch used to train
 	train_dir = fullfile(CaSignal.localFCNModelPathName, 'local_fcn_temp_training_dataset');

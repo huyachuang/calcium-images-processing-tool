@@ -10,6 +10,7 @@ function CaSignal = update_image_show(handles, CaSignal, is_restore_zoom)
 		p_top = temp;
 	end
 	img = imadjust(img, [p_bottom, p_top]);
+	img = imsharpen(img);
 	CaSignal.h_image = imshow(img);
 	hold on;
 	if get(handles.ShowROINoCheckbox, 'Value') == 0

@@ -41,10 +41,15 @@ function training_data_path = generate_localFCN_training_data(src_dir, dst_dir, 
 			for k = 1:size(ROImasks, 2)
 				mask = ROImasks{k};
 				[rId, cId] = find(mask);
-				idx = randsample(size(rId, 1), random_sample_num);
+				if random_sample_num > size(rId, 1)
+					random_sample_num_temp = size(rId, 1);
+				else
+					random_sample_num_temp = random_sample_num;
+				end
+				idx = randsample(size(rId, 1), random_sample_num_temp);
 				rId = rId(idx);
 				cId = cId(idx);		
-				for n = 1:random_sample_num
+				for n = 1:random_sample_num_temp
 					r = rId(n);
 					c = cId(n);
 					img_count = img_count + 1;
