@@ -20,6 +20,7 @@ function CaSignal = remove_redundant_roi(CaSignal, use_NMS, use_Diameter)
 		y_start = ROIs{i}{1};
 		x_start = ROIs{i}{3};
 		x = boundary(:,2) + x_start;
+		
 		y = boundary(:,1) + y_start;
 		if use_Diameter
 			centre_y = mean(y);

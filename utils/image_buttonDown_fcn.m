@@ -1,7 +1,7 @@
 function CaSignal = Image_buttonDown_fcn(hObject,eventdata, handles, CaSignal)
 
-	x = uint16(eventdata.IntersectionPoint(1));
-	y = uint16(eventdata.IntersectionPoint(2));
+	x = round(eventdata.IntersectionPoint(1));
+	y = round(eventdata.IntersectionPoint(2));
 	CaSignal.TempXY = [x, y];
 	if get(handles.DrawROICheckbox,'Value') == 1 && CaSignal.SummarizedMask(y, x) == 0
 		disp('pick ROI');

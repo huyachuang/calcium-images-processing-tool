@@ -17,7 +17,7 @@ function ROImasks = load_ROImasks(ROI_file)
 % 			ROImasks{j} = tempMask;
 % 		end
 	else
-		errordlg(['Not find any ROIinfo file in ', temp_dir], 'File Error');
+		errordlg(['Not find any ROIinfo field in ', ROI_file], 'File Error');
 		return;
 	end
 end

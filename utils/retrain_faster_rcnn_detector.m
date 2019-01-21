@@ -79,35 +79,35 @@ function CaSignal = retrain_faster_rcnn_detector(CaSignal, datapath)
 	end
 	lgraph = createLgraphUsingConnections(layers,connections);
 	
-	detector = trainFasterRCNNObjectDetector(training_dataset,...
-		lgraph, options, ...
-		'NegativeOverlapRange', [0 0.3], ...
-		'PositiveOverlapRange', [0.3 1], ...
-		'NumRegionsToSample', 1000, ...
-		'SmallestImageDimension', 512);
-	
-	[file, path] = uiputfile('*.mat', 'Save trained model file');
-	if isequal(file,0) || isequal(path,0)
-		answer = questdlg('Sure you do NOT want save trained model ?', 'Alert query');
-		switch answer
-			case 'Yes'
-				return;
-			case 'No'
-				[file, path] = uiputfile('*.mat', 'Save trained model file');
-				if isequal(file,0) || isequal(path,0)
-					return
-				end
-			case 'Cancel'
-				[file, path] = uiputfile('*.mat', 'Save trained model file');
-				if isequal(file,0) || isequal(path,0)
-					return
-				end
-		end
-	end
-	CaSignal.FasterRCNNDetector = detector;
-	CaSignal.FasterRCNNDetectorFilename = file;
-	CaSignal.FasterRCNNDetectorPathName = path;
-	save(fullfile(path, file), 'detector');
+% 	detector = trainFasterRCNNObjectDetector(training_dataset,...
+% 		lgraph, options, ...
+% 		'NegativeOverlapRange', [0 0.3], ...
+% 		'PositiveOverlapRange', [0.3 1], ...
+% 		'NumRegionsToSample', 1000, ...
+% 		'SmallestImageDimension', 512);
+% 	
+% 	[file, path] = uiputfile('*.mat', 'Save trained model file');
+% 	if isequal(file,0) || isequal(path,0)
+% 		answer = questdlg('Sure you do NOT want save trained model ?', 'Alert query');
+% 		switch answer
+% 			case 'Yes'
+% 				return;
+% 			case 'No'
+% 				[file, path] = uiputfile('*.mat', 'Save trained model file');
+% 				if isequal(file,0) || isequal(path,0)
+% 					return
+% 				end
+% 			case 'Cancel'
+% 				[file, path] = uiputfile('*.mat', 'Save trained model file');
+% 				if isequal(file,0) || isequal(path,0)
+% 					return
+% 				end
+% 		end
+% 	end
+% 	CaSignal.FasterRCNNDetector = detector;
+% 	CaSignal.FasterRCNNDetectorFilename = file;
+% 	CaSignal.FasterRCNNDetectorPathName = path;
+% 	save(fullfile(path, file), 'detector');
 	
 	% prepare model
 	fcn_faster_rcnn_filename = fullfile(CaSignal.FasterRCNNDetectorPathName,...

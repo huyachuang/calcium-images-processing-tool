@@ -9,10 +9,10 @@ function [training_dataset, traing_dir] = generate_faster_rcnn_training_data(src
 	filenames = {};
 	boxes = {};
 	% for fcn
-	shift_x = [-1*round(roi_diameter/3) 0];
-	shift_y = [-1*round(roi_diameter/3) 0];
-	shift_w = [0 round(roi_diameter/3)];
-	shift_h = [0 round(roi_diameter/3)];
+	shift_x = [-1*round(roi_diameter/3)];
+	shift_y = [-1*round(roi_diameter/3)];
+	shift_w = [round(roi_diameter/3)];
+	shift_h = [round(roi_diameter/3)];
 	
 	if exist(dst_dir, 'dir') == 0
 		mkdir(dst_dir);
@@ -49,10 +49,17 @@ function [training_dataset, traing_dir] = generate_faster_rcnn_training_data(src
 		end
 			% resize image
 		[mean_images, ~] = load_image_data(data_path);
+		sample_num = 10;
+		N = floor(size(mean_images, 3) / sample_num);
+		if N ==0
+			sample_num = size(mean_images, 3);
+			N = 1;
+		end
 % 		img = max(mean_images, [], 3);
 % 		img = gray2RGB(img);
-		for img_idx = 1:size(mean_image, 3)
-			img = gray2RGB(mean_image(:, :, 3));
+		for img_idx = 1:sample_num
+			img = max(mean_images(:, :, (img_idx-1)*N+1 : img_idx*N), [], 3);
+			img = gray2RGB(img);
 			summarized_pos = zeros(size(ROImasks, 2), 4);
 			if size(ROImasks, 1) ~= dest_size || size(ROImasks, 2) ~= dest_size
 				img = imresize(img, [dest_size dest_size]);
