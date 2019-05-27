@@ -427,7 +427,7 @@ end
 CaSignal.imageFilename = filename;
 CaSignal.imagePathName = pathName;
 disp('Loading Image Data')
-[CaSignal.mean_images, CaSignal.max_images, CaSignal.max_delta_images] = load_image_data_v3(CaSignal.imagePathName);
+[CaSignal.mean_images, CaSignal.max_images, CaSignal.max_delta_images] = load_image_data_v2(CaSignal.imagePathName);
 disp('Done')
 CaSignal.current_trial = 1;
 CaSignal.total_trial = size(CaSignal.mean_images, 3);
