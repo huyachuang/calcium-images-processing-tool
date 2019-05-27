@@ -5,7 +5,7 @@ function varargout = one_clicke(varargin)
 %
 %      H = ONE_CLICKE returns the handle to a new ONE_CLICKE or the handle to
 %      the existing singleton*.
-%
+% 
 %      ONE_CLICKE('CALLBACK',hObject,eventData,handles,...) calls the local
 %      function named CALLBACK in ONE_CLICKE.M with the given input arguments.
 %
@@ -404,31 +404,17 @@ for i = 1:CaSignal.ROI_num
 		ROImask{n} = tempMask;
 	end
 end
-
-% [file, path] = uiputfile('*.mat', 'Save ROI masks');
-% if isequal(file,0) || isequal(path,0)
-% 	answer = questdlg('Sure you do NOT want save ROI masks ?', 'Alert query');
-% 	switch answer
-% 		case 'Yes'
-% 			return;
-% 		case 'No'
-% 			[file, path] = uiputfile('*.mat', 'Save trained model file');
-% 			if isequal(file,0) || isequal(path,0)
-% 				return
-% 			end
-% 		case 'Cancel'
-% 			[file, path] = uiputfile('*.mat', 'Save trained model file');
-% 			if isequal(file,0) || isequal(path,0)
-% 				return
-% 			end
-% 	end
-% end
+masks = zeros(CaSignal.image_height, CaSignal.image_width, n);
+for i = 1:n
+	masks(:, :, i) = ROImask{i};
+end
 if exist(fullfile(CaSignal.imagePathName, 'ROIInfo'), 'dir') == 0
 	mkdir(fullfile(CaSignal.imagePathName, 'ROIInfo'));
 end
 disp('Save ROI info');
 save(fullfile(CaSignal.imagePathName, 'ROIInfo', 'ROIInfo.mat'), 'ROImask');
-% save(fullfile(path, file), 'ROImask');
+h5create(fullfile(CaSignal.imagePathName, 'ROIInfo', 'ROIInfo.h5'), '/masks', size(masks))
+h5write(fullfile(CaSignal.imagePathName, 'ROIInfo', 'ROIInfo.h5'), '/masks', uint8(masks));
 
 
 % --------------------------------------------------------------------
@@ -441,7 +427,7 @@ end
 CaSignal.imageFilename = filename;
 CaSignal.imagePathName = pathName;
 disp('Loading Image Data')
-[CaSignal.mean_images, CaSignal.max_images, CaSignal.max_delta_images] = load_image_data_v2(CaSignal.imagePathName);
+[CaSignal.mean_images, CaSignal.max_images, CaSignal.max_delta_images] = load_image_data_v3(CaSignal.imagePathName);
 disp('Done')
 CaSignal.current_trial = 1;
 CaSignal.total_trial = size(CaSignal.mean_images, 3);
@@ -543,8 +529,10 @@ elseif strcmp(eventdata.Key, 'd') && CaSignal.TempROI{7} <= CaSignal.ROI_num
 	DeleteButton_Callback(hObject, eventdata, handles);
 elseif strcmp(eventdata.Key, 'r')
 	ReDrawButton_Callback(hObject, eventdata, handles);
-elseif strcmp(eventdata.Key, 'n')
-	FindNextButton_Callback(hObject, eventdata, handles);
+elseif strcmp(eventdata.Key, 'c')
+	NextTrialButton_Callback(hObject, eventdata, handles);
+elseif strcmp(eventdata.Key, 'z')
+	PreviousTrialButton_Callback(hObject, eventdata, handles);
 else
 	return
 end

@@ -1,23 +1,22 @@
 function ROImasks = load_ROImasks(ROI_file)
-	ROImasks = [];
-	ROIinfo = load(ROI_file);
-	if isfield(ROIinfo, 'ROIinfoBU')
-		ROImasks = ROIinfo.ROIinfoBU.ROImask;
-	elseif isfield(ROIinfo, 'ROImask')
-		ROImasks = ROIinfo.ROImask;
-% 		ROImasks = cell([1, size(ROIs, 2)]);
-% 		for j = 1:size(ROIs, 2)
-% 			tempMask = zeros(size(img, 1), size(img, 2));
-% 			y_start = ROIs{j}{1};
-% 			y_end = ROIs{j}{2};
-% 			x_start = ROIs{j}{3};
-% 			x_end = ROIs{j}{4};
-% 			tempRoi = ROIs{j}{5};
-% 			tempMask(y_start:y_end, x_start:x_end) = tempRoi(1:y_end - y_start + 1, 1:x_end - x_start + 1);
-% 			ROImasks{j} = tempMask;
-% 		end
-	else
-		errordlg(['Not find any ROIinfo field in ', ROI_file], 'File Error');
-		return;
+	[filepath,name,ext] = fileparts(ROI_file);
+	if strcmp(ext, '.mat')
+		ROImasks = [];
+		ROIinfo = load(ROI_file);
+		if isfield(ROIinfo, 'ROIinfoBU')
+			ROImasks = ROIinfo.ROIinfoBU.ROImask;
+		elseif isfield(ROIinfo, 'ROImask')
+			ROImasks = ROIinfo.ROImask;
+		else
+			errordlg(['Not find any ROIinfo field in ', ROI_file], 'File Error');
+			return;
+		end
+	elseif strcmp(ext, '.hdf5')
+		masks = h5read(ROI_file, '/masks/raw');
+		ROImasks = {};
+		for i = 1:size(masks, 3)
+			ROImasks{i} = transpose(masks(:, :, i));
+% 			ROImasks{i} = masks(:, :, i);
+		end
 	end
 end
